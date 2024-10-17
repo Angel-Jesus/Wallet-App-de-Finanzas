@@ -1,4 +1,4 @@
-package com.angelpr.wallet.presentation.view
+package com.angelpr.wallet.presentation.screen
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -9,7 +9,6 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -19,18 +18,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.angelpr.wallet.navigation.AppScreens
 import com.angelpr.wallet.presentation.components.NavigatorDrawer
+import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.GreenTopBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScreenStatistics(
+fun DebtScreen(
+    viewModel: WalletViewModel,
     scope: CoroutineScope,
     drawerState: DrawerState,
-    navController: NavController) {
+    navController: NavController
+) {
 
     NavigatorDrawer(
         itemSelected = 1,
@@ -41,30 +41,7 @@ fun ScreenStatistics(
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
-                TopAppBar(
-                    title = { Text(text = "Estadistica") },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                scope.launch {
-                                    drawerState.open()
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Menu Screen Statistics"
-                            )
-                        }
-                    },
-                    colors = TopAppBarColors(
-                        containerColor = GreenTopBar,
-                        scrolledContainerColor = GreenTopBar,
-                        navigationIconContentColor = Color.White,
-                        titleContentColor = Color.White,
-                        actionIconContentColor = GreenTopBar
-                    )
-                )
+                TopBar(scope, drawerState)
             },
         ) { innerPadding ->
             LazyColumn(
@@ -72,11 +49,43 @@ fun ScreenStatistics(
             ) {
                 item {
                     Text(
-                        text = "Hello Screen Stadistics",
+                        text = "Hello Screen Debts",
                         modifier = Modifier.padding(start = 16.dp)
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun TopBar(
+    scope: CoroutineScope,
+    drawerState: DrawerState
+) {
+    TopAppBar(
+        title = { Text(text = "Deudas") },
+        navigationIcon = {
+            IconButton(
+                onClick = {
+                    scope.launch {
+                        drawerState.open()
+                    }
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Menu,
+                    contentDescription = "Menu Screen Debts"
+                )
+            }
+        },
+        colors = TopAppBarColors(
+            containerColor = GreenTopBar,
+            scrolledContainerColor = GreenTopBar,
+            navigationIconContentColor = Color.White,
+            titleContentColor = Color.White,
+            actionIconContentColor = GreenTopBar
+        )
+    )
 }

@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    //alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.dagger.hilt.android)
+    alias(libs.plugins.devtools.ksp)
 }
 
 android {
@@ -38,6 +41,13 @@ android {
     buildFeatures {
         compose = true
     }
+
+    /*
+    kapt{
+        correctErrorTypes = true
+    }
+
+     */
 }
 
 dependencies {
@@ -57,7 +67,15 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    //Navigation Library
+    // Navigation Library
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
+    // Hilt
+    implementation(libs.dagger.hilt)
+    implementation(libs.androidx.hilt.navigation)
+    ksp(libs.hilt.compiler)
+    // Room
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
 }

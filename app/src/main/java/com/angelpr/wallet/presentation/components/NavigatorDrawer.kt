@@ -17,8 +17,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.DrawerState
@@ -166,14 +168,14 @@ val items = listOf(
         selectedIcon = Icons.Filled.Info,
         unselectedIcon = Icons.Outlined.Info,
         route = AppScreens.ScreenStatistics
-    )
-/*
+    ),
     NavigationItem(
         title = "Deudas",
         selectedIcon = Icons.Filled.Delete,
         unselectedIcon = Icons.Outlined.Delete,
-        route = TODO()
+        route = AppScreens.ScreenDebts
     ),
+    /*
     NavigationItem(
         title = "Configuracion",
         selectedIcon = Icons.Filled.Settings,
