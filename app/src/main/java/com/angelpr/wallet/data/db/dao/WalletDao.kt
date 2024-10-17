@@ -26,8 +26,11 @@ interface WalletDao {
 
     // Debt Card into the database
 
-    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :id AND isPaid = 1")
+    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :id AND isPaid = 0")
     suspend fun getDebtCardById(id: Int): List<DebtsWalletEntity>
+
+    @Query("SELECT SUM(debt) FROM debtsWallet_table WHERE idWallet = :id AND date BETWEEN :dateInit AND :dateEnd")
+    suspend fun getLineUseCard(id: Int, dateInit: Long, dateEnd: Long): Float
 
     @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :id AND date BETWEEN :dateInit AND :dateEnd")
     suspend fun getDebtCardByDate(id: Int, dateInit: Long, dateEnd: Long): List<DebtsWalletEntity>

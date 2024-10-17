@@ -13,7 +13,7 @@ data class DebtsWalletEntity(
     @ColumnInfo(name = "idWallet")
     val idWallet: Int,
     @ColumnInfo(name = "debt")
-    val debt: Int,
+    val debt: Float,
     @ColumnInfo(name = "type")
     val type: String,
     @ColumnInfo(name = "isPaid")

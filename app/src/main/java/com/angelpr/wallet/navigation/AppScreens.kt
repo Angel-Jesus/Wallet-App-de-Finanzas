@@ -21,6 +21,8 @@ sealed class AppScreens {
         val dateClose: String,
         val colorCard: Long
     ): AppScreens()
+    @Serializable
+    data object ScreenAddDebt: AppScreens()
     /*
     @Serializable
     data object ScreenSettings: AppScreens()

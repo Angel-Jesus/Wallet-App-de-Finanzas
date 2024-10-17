@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -25,9 +26,10 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ScreenStatistics(
-    scope: CoroutineScope,
     drawerState: DrawerState,
     navController: NavController) {
+
+    val scope = rememberCoroutineScope()
 
     NavigatorDrawer(
         itemSelected = 1,

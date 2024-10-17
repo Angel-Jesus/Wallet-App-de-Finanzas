@@ -1,21 +1,27 @@
 package com.angelpr.wallet.presentation.screen
 
 import android.icu.text.DecimalFormat
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.rounded.AddCircle
@@ -40,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +56,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.navigation.AppScreens
 import com.angelpr.wallet.presentation.components.NavigatorDrawer
@@ -58,24 +66,32 @@ import com.angelpr.wallet.ui.theme.GreenTopBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ScreenInit(
     viewModel: WalletViewModel,
-    scope: CoroutineScope,
     drawerState: DrawerState,
     navController: NavController
 ) {
+    val scope = rememberCoroutineScope()
 
     val uiState by viewModel.stateCard.collectAsState()
+    val lineUsedCard by viewModel.totalDebtCard.collectAsState()
+
     var colorContainer by remember { mutableStateOf(Color.Gray.value) }
+    var indexCard by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(scope) {
         viewModel.getAllCard()
         //Log.i("cardList", uiState.cardList.toString())
     }
 
-    var indexCard by remember { mutableIntStateOf(0) }
+    LaunchedEffect(uiState) {
+        if(uiState.cardList.isNotEmpty()) {
+            viewModel.getLineUseCard(indexCard, uiState.cardList[indexCard].dateClose)
+        }
+    }
 
     NavigatorDrawer(
         itemSelected = 0,
@@ -96,55 +112,7 @@ fun ScreenInit(
                     .fillMaxSize()
             ) {
                 item {
-                    Card(
-                        shape = RoundedCornerShape(0.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.White
-                        )
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(start = 8.dp, end = 8.dp)
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                modifier = Modifier
-                                    .padding(top = 16.dp, bottom = 16.dp),
-                                text = "Lista de cuentas",
-                                color = Color.Black
-                            )
-
-                            OutlinedIconButton(
-                                modifier = Modifier
-                                    .size(32.dp),
-                                onClick = {
-                                    // Pass parameter of card to editScreen
-                                    navController.navigate(
-                                        AppScreens.ScreenEditCard(
-                                            id = uiState.cardList[indexCard].id,
-                                            nameWallet = uiState.cardList[indexCard].nameCard,
-                                            creditLine = uiState.cardList[indexCard].creditLineCard,
-                                            typeMoney = uiState.cardList[indexCard].typeMoney,
-                                            dateExpiration = uiState.cardList[indexCard].paidDateExpired.toString(),
-                                            dateClose = uiState.cardList[indexCard].dateClose.toString(),
-                                            colorCard = uiState.cardList[indexCard].colorCard.toLong()
-                                        )
-                                    )
-                                },
-                                shape = RoundedCornerShape(8.dp),
-                                border = BorderStroke(1.dp, Color.LightGray)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Settings,
-                                    contentDescription = "Add Card",
-                                    tint = Color.Blue
-                                )
-                            }
-
-                        }
-                    }
+                    TitleCards(navController, uiState, indexCard)
                 }
 
                 item {
@@ -178,30 +146,13 @@ fun ScreenInit(
                                     indexCard = index
                                 }
                             }
-
-                            OutlinedButton(
-                                modifier = Modifier.fillMaxWidth(0.49f),
-                                onClick = { navController.navigate(AppScreens.ScreenAddWallet) },
-                                shape = RoundedCornerShape(5.dp)
-                            ) {
-                                Text(
-                                    modifier = Modifier
-                                        .padding(end = 8.dp, top = 10.dp, bottom = 10.dp),
-                                    text = "AÑADIR CUENTA"
-                                )
-                                Icon(
-                                    modifier = Modifier.size(16.dp),
-                                    imageVector = Icons.Rounded.AddCircle,
-                                    contentDescription = "Add Card"
-                                )
-                            }
                         }
                     }
                 }
 
                 if (uiState.cardList.isNotEmpty()) {
                     item {
-                        CurrentBalanceCard(card = uiState.cardList[indexCard])
+                        CurrentBalanceCard(lineUsedCard = lineUsedCard, card = uiState.cardList[indexCard])
                     }
                 }
 
@@ -211,8 +162,106 @@ fun ScreenInit(
 }
 
 @Composable
-fun CurrentBalanceCard(card: CardModel?) {
+private fun TitleCards(
+    navController: NavController,
+    uiState: WalletViewModel.UiStateCard,
+    indexCard: Int
+) {
+    Card(
+        shape = RoundedCornerShape(0.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(start = 8.dp, end = 8.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            //horizontalArrangement = Arrangement.Start
+        ) {
+            Text(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(top = 16.dp, bottom = 16.dp),
+                text = "Lista de cuentas",
+                color = Color.Black
+            )
+
+            OutlinedIconButton(
+                modifier = Modifier
+                    .size(32.dp),
+                onClick = {
+                    navController.navigate(AppScreens.ScreenAddWallet)
+                },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.LightGray)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "Add Card",
+                    tint = Color.Blue
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            OutlinedIconButton(
+                modifier = Modifier
+                    .size(32.dp),
+                onClick = {
+                    // Pass parameter of card to editScreen
+                    if(uiState.cardList.isNotEmpty()){
+                        navController.navigate(
+                            AppScreens.ScreenEditCard(
+                                id = uiState.cardList[indexCard].id,
+                                nameWallet = uiState.cardList[indexCard].nameCard,
+                                creditLine = uiState.cardList[indexCard].creditLineCard,
+                                typeMoney = uiState.cardList[indexCard].typeMoney,
+                                dateExpiration = uiState.cardList[indexCard].paidDateExpired.toString(),
+                                dateClose = uiState.cardList[indexCard].dateClose.toString(),
+                                colorCard = uiState.cardList[indexCard].colorCard.toLong()
+                            )
+                        )
+                    }
+                },
+                shape = RoundedCornerShape(8.dp),
+                border = BorderStroke(1.dp, Color.LightGray)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Settings,
+                    contentDescription = "Add Card",
+                    tint = Color.Blue
+                )
+            }
+
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun previewTitleCards() {
+    MaterialTheme {
+        TitleCards(
+            navController = rememberNavController(),
+            uiState = WalletViewModel.UiStateCard(),
+            indexCard = 0
+        )
+    }
+}
+
+@Composable
+fun CurrentBalanceCard(lineUsedCard: Float, card: CardModel?) {
     val formatter = DecimalFormat("#,###.00")
+
+    val totalLine = card!!.creditLineCard.toFloat()
+
+    val lineAvailable = totalLine - lineUsedCard
+    val percentUsed = (lineUsedCard / totalLine)
+
+    Log.i("percentUsed", percentUsed.toString())
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -237,7 +286,7 @@ fun CurrentBalanceCard(card: CardModel?) {
                 .padding(top = 8.dp, bottom = 24.dp)
                 .fillMaxWidth()
                 .wrapContentWidth(align = Alignment.CenterHorizontally),
-            text = card?.nameCard ?: "No hay Tarjeta",
+            text = card.nameCard,
             fontSize = 20.sp
         )
 
@@ -247,9 +296,9 @@ fun CurrentBalanceCard(card: CardModel?) {
                 .fillMaxWidth()
                 .padding(start = 18.dp, end = 18.dp),
             progress = {
-                0.6f
+                percentUsed
             },
-            color = Color(card?.colorCard ?: Color.Blue.value)
+            color = Color(card.colorCard)
         )
         Row(
             modifier = Modifier
@@ -260,14 +309,13 @@ fun CurrentBalanceCard(card: CardModel?) {
             Text(
                 modifier = Modifier
                     .padding(start = 14.dp),
-                text = "0"
+                text = card.typeMoney + " " + formatter.format(lineUsedCard)
             )
 
             Text(
                 modifier = Modifier
                     .padding(end = 14.dp),
-                text = (card?.typeMoney
-                    ?: "PEN") + " " + formatter.format(card?.creditLineCard?.toDouble() ?: 0)
+                text = card.typeMoney + " " + formatter.format(lineAvailable)
             )
         }
 

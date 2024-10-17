@@ -9,4 +9,7 @@ class GetWalletUseCase @Inject constructor(
     private val repository: WalletRepository
 ) {
     suspend fun AllCard(): List<CardModel> = repository.getAllCardFromDatabase()
+
+    suspend fun GetLineUseCard(id: Int, dateInit: Long, dateEnd: Long): Float =
+        repository.getLineUseToDatabase(id = id, dateInit = dateInit, dateEnd = dateEnd)
 }

@@ -44,6 +44,9 @@ class WalletRepository @Inject constructor(
 
     // Action by Debts
 
+    suspend fun getLineUseToDatabase(id: Int, dateInit: Long, dateEnd: Long): Float =
+        walletDao.getLineUseCard(id = id, dateInit = dateInit, dateEnd = dateEnd)
+
     suspend fun getDateDebtToDatabase(id: Int, dateInit: Long, dateEnd: Long): List<DebtModel> {
         val response: List<DebtsWalletEntity> =
             walletDao.getDebtCardByDate(id = id, dateInit = dateInit, dateEnd = dateEnd)

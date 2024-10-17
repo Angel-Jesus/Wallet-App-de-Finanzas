@@ -12,9 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -39,7 +36,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -49,7 +45,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.angelpr.wallet.R
 import com.angelpr.wallet.navigation.AppScreens
-import com.angelpr.wallet.navigation.NavManager
 import com.angelpr.wallet.ui.theme.GreenTopBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -88,7 +83,7 @@ fun NavigatorDrawer(
                                     .padding(start = 16.dp, end = 16.dp)
                                     .height(60.dp)
                                     .fillMaxWidth(0.2f),
-                                painter = painterResource(id = R.drawable.wallet),
+                                painter = painterResource(id = R.drawable.icon_wallet),
                                 contentDescription = "Logo App"
                             )
 
