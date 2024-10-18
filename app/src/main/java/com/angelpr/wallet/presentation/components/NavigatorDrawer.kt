@@ -83,7 +83,7 @@ fun NavigatorDrawer(
                                     .padding(start = 16.dp, end = 16.dp)
                                     .height(60.dp)
                                     .fillMaxWidth(0.2f),
-                                painter = painterResource(id = R.drawable.icon_wallet),
+                                painter = painterResource(id = R.drawable.wallet),
                                 contentDescription = "Logo App"
                             )
 
@@ -159,16 +159,16 @@ val items = listOf(
         route = AppScreens.ScreenInit
     ),
     NavigationItem(
-        title = "Estadistica",
-        selectedIcon = Icons.Filled.Info,
-        unselectedIcon = Icons.Outlined.Info,
-        route = AppScreens.ScreenStatistics
-    ),
-    NavigationItem(
         title = "Deudas",
         selectedIcon = Icons.Filled.Delete,
         unselectedIcon = Icons.Outlined.Delete,
         route = AppScreens.ScreenDebts
+    ),
+    NavigationItem(
+        title = "Estadistica",
+        selectedIcon = Icons.Filled.Info,
+        unselectedIcon = Icons.Outlined.Info,
+        route = AppScreens.ScreenStatistics
     ),
     /*
     NavigationItem(

@@ -11,6 +11,7 @@ import com.angelpr.wallet.domain.DeleteWalletUseCase
 import com.angelpr.wallet.domain.GetWalletUseCase
 import com.angelpr.wallet.domain.SendWalletUseCase
 import com.angelpr.wallet.domain.UpdateWalletUseCase
+import com.angelpr.wallet.presentation.components.model.Type
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,6 +37,9 @@ class WalletViewModel @Inject constructor(
 
     private val _totalDebtCard = MutableStateFlow(0.0f)
     val totalDebtCard = _totalDebtCard.asStateFlow()
+
+    private val _totalDebtType = MutableStateFlow(emptyMap<String, Type>())
+    val totalDebtType = _totalDebtType.asStateFlow()
 
     // Action by Cards
     fun getAllCard() {
@@ -73,8 +77,8 @@ class WalletViewModel @Inject constructor(
             val init = getInitDate(dateClose)
             val end = init.plusMonths(1)
 
-            val initDate = init.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
-            val endDate = end.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+            val initDate = init.toEpochDay()
+            val endDate = end.toEpochDay()
 
             _totalDebtCard.update { getWalletUseCase.GetLineUseCard(id, initDate, endDate) }
         }
@@ -86,6 +90,19 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
             _stateDebt.update { it.copy(state = sendWalletUseCase.Debt(debt)) }
+        }
+    }
+
+    fun getDebtByCard(id: Int) {
+        viewModelScope.launch {
+            _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
+            _stateDebt.update { it.copy(state = ActionProcess.SUCCESS, debtList = getWalletUseCase.GetDebtCard(id)) }
+        }
+    }
+
+    fun getDebtByType(debtList: List<DebtModel>){
+        viewModelScope.launch{
+            _totalDebtType.update { getWalletUseCase.GetTotalDebtType(debtList) }
         }
     }
 

@@ -25,14 +25,13 @@ interface WalletDao {
     suspend fun deleteCard(id: Int)
 
     // Debt Card into the database
-
     @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :id AND isPaid = 0")
     suspend fun getDebtCardById(id: Int): List<DebtsWalletEntity>
 
-    @Query("SELECT SUM(debt) FROM debtsWallet_table WHERE idWallet = :id AND date BETWEEN :dateInit AND :dateEnd")
+    @Query("SELECT SUM(CASE WHEN quotas > 1 THEN debt/quotas ELSE debt END) AS total_debt FROM debtsWallet_table WHERE idWallet = :id AND date BETWEEN :dateInit AND :dateEnd")
     suspend fun getLineUseCard(id: Int, dateInit: Long, dateEnd: Long): Float
 
-    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :id AND date BETWEEN :dateInit AND :dateEnd")
+    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :id AND isPaid = 0 AND date BETWEEN :dateInit AND :dateEnd")
     suspend fun getDebtCardByDate(id: Int, dateInit: Long, dateEnd: Long): List<DebtsWalletEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

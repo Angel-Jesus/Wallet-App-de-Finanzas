@@ -74,24 +74,28 @@ fun AddDebtScreen(
         viewModel.getAllCard()
     }
 
-    var idWallet by remember { mutableIntStateOf(0) }
+    var nameCard by remember { mutableStateOf(uiState.cardList[0].nameCard) }
+    var typeMoney by remember { mutableStateOf(uiState.cardList[0].typeMoney) }
+    var idWallet by remember { mutableIntStateOf(uiState.cardList[0].id) }
     var cost by remember { mutableStateOf("") }
+    var quotas by remember { mutableStateOf("1") }
     var category by remember { mutableStateOf(Categories.Debt[0].name) }
 
     Scaffold(
         topBar = {
             TopBar(navController) {
                 // Add debt
-                val date = LocalDate.now()
-                    .atStartOfDay()
-                    .toEpochSecond(ZoneOffset.UTC)
+                val date = LocalDate.now().toEpochDay()
 
                 viewModel.addDebt(
                     DebtModel(
                         idWallet = idWallet,
+                        nameCard = nameCard,
+                        typeMoney = typeMoney,
                         debt = cost.toFloat(),
                         type = category,
                         isPaid = 0,
+                        quotas = quotas.toInt(),
                         date = date
                     )
                 )
@@ -116,7 +120,9 @@ fun AddDebtScreen(
                 paddingTop = 8.dp,
                 listCards = uiState.cardList
             ) { card ->
+                nameCard = card.nameCard
                 idWallet = card.id
+                typeMoney = card.typeMoney
             }
 
             Text(
@@ -145,6 +151,41 @@ fun AddDebtScreen(
                 value = cost,
                 onValueChange = { newValue ->
                     cost = newValue
+                },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                colors = TextFieldDefaults.colors(
+                    unfocusedContainerColor = Color.White,
+                    unfocusedIndicatorColor = Color.LightGray
+                )
+            )
+
+            Text(
+                modifier = Modifier
+                    .padding(start = 8.dp, end = 8.dp, top = 16.dp),
+                text = "Cuotas",
+                color = Color.Gray,
+                fontSize = 13.sp
+            )
+
+            TextField(
+                modifier = Modifier
+                    .padding(start = 8.dp, end = 8.dp)
+                    .fillMaxWidth()
+                    .onFocusChanged { isFocused ->
+                        if (isFocused.isFocused) {
+                            if (quotas == "1") {
+                                quotas = ""
+                            }
+                        } else {
+                            if (quotas == "") {
+                                quotas = "1"
+                            }
+                        }
+                    },
+                value = quotas,
+                onValueChange = { newValue ->
+                    quotas = newValue
                 },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

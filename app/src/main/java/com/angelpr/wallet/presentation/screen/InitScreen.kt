@@ -41,6 +41,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -70,6 +71,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ScreenInit(
+    cardId: MutableIntState,
     viewModel: WalletViewModel,
     drawerState: DrawerState,
     navController: NavController
@@ -84,12 +86,12 @@ fun ScreenInit(
 
     LaunchedEffect(scope) {
         viewModel.getAllCard()
-        //Log.i("cardList", uiState.cardList.toString())
     }
 
     LaunchedEffect(uiState) {
         if(uiState.cardList.isNotEmpty()) {
-            viewModel.getLineUseCard(indexCard, uiState.cardList[indexCard].dateClose)
+            cardId.intValue = uiState.cardList[indexCard].id
+            viewModel.getLineUseCard(cardId.intValue, uiState.cardList[indexCard].dateClose)
         }
     }
 
@@ -144,6 +146,7 @@ fun ScreenInit(
 
                                 CardWalletItem(colorContainer, cardWallet) {
                                     indexCard = index
+                                    Log.d("DebtScreen", "idCard1: ${cardWallet.id}")
                                 }
                             }
                         }
@@ -152,6 +155,9 @@ fun ScreenInit(
 
                 if (uiState.cardList.isNotEmpty()) {
                     item {
+                        // Save cardId to use in DebtScreen
+                        cardId.intValue = uiState.cardList[indexCard].id
+                        // Show current balance
                         CurrentBalanceCard(lineUsedCard = lineUsedCard, card = uiState.cardList[indexCard])
                     }
                 }

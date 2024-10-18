@@ -13,7 +13,7 @@ object Categories {
         Type(
             name = "Comida y Bebida",
             icon = R.drawable.category_food,
-            color = Food
+            color = Food,
         ),
         Type(
             name = "Compras",
@@ -41,5 +41,7 @@ object Categories {
 data class Type(
     val name: String,
     val icon: Int,
-    val color: Color
+    val color: Color,
+    val typeMoney: String = "PEN",
+    var value: Float = 0.0f
 )
