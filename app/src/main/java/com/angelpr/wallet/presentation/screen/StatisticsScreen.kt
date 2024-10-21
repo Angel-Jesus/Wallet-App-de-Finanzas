@@ -32,7 +32,7 @@ fun ScreenStatistics(
     val scope = rememberCoroutineScope()
 
     NavigatorDrawer(
-        itemSelected = 1,
+        itemSelected = 2,
         navController = navController,
         drawerState = drawerState,
         scope = scope

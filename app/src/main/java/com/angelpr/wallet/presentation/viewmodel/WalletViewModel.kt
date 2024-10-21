@@ -1,5 +1,6 @@
 package com.angelpr.wallet.presentation.viewmodel
 
+import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -71,7 +73,6 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun getLineUseCard(id: Int, dateClose: Int) {
         viewModelScope.launch {
             val init = getInitDate(dateClose)
@@ -85,7 +86,6 @@ class WalletViewModel @Inject constructor(
     }
 
     // Action by Debts
-
     fun addDebt(debt: DebtModel){
         viewModelScope.launch {
             _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
@@ -101,9 +101,7 @@ class WalletViewModel @Inject constructor(
     }
 
     fun getDebtByType(debtList: List<DebtModel>){
-        viewModelScope.launch{
-            _totalDebtType.update { getWalletUseCase.GetTotalDebtType(debtList) }
-        }
+        _totalDebtType.update { getWalletUseCase.GetTotalDebtType(debtList) }
     }
 
     fun updateDebtState(id: Int, isPaid: Int) {
@@ -111,6 +109,19 @@ class WalletViewModel @Inject constructor(
             _stateCard.update { it.copy(state = ActionProcess.LOADING) }
             _stateCard.update { it.copy(state = updateWalletUseCase.DebtState(id, isPaid)) }
         }
+    }
+
+    // Extra Function
+    fun getDateExpired(dayExpired: Int, dateClose: Int, dateToday: LocalDate):Long{
+        val dateMonthToday = LocalDate.of(dateToday.year, dateToday.month.value, dayExpired)
+
+        val date = if(dateToday.dayOfMonth > dateClose){
+            dateMonthToday.plusMonths(2)
+        }else{
+            dateMonthToday.plusMonths(1)
+        }
+
+        return date.toEpochDay()
     }
 
     data class UiStateCard(
@@ -123,11 +134,9 @@ class WalletViewModel @Inject constructor(
         var state: ActionProcess = ActionProcess.NOT_AVAILABLE
     )
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun getInitDate(date: Int): LocalDate {
         val today = LocalDate.now()
         return LocalDate.of(today.year, today.month, date)
     }
-
 
 }

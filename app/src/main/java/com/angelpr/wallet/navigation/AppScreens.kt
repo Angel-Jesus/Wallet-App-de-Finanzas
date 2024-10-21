@@ -1,5 +1,6 @@
 package com.angelpr.wallet.navigation
 
+import com.angelpr.wallet.data.model.CardModel
 import kotlinx.serialization.Serializable
 
 sealed class AppScreens {

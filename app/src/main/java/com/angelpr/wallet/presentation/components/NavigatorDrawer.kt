@@ -116,7 +116,6 @@ fun NavigatorDrawer(
                                     if(index != itemSelected){
                                         navController.navigate(item.route)
                                     }
-
                                 },
                                 icon = {
                                     Icon(

@@ -1,5 +1,8 @@
 package com.angelpr.wallet.data.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class CardModel(
     val id: Int = 0,
     val nameCard: String,

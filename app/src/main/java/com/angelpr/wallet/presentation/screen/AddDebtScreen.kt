@@ -58,7 +58,6 @@ import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.GreenTopBar
 import com.angelpr.wallet.ui.theme.Wallet
 import java.time.LocalDate
-import java.time.ZoneOffset
 
 @SuppressLint("NewApi")
 @Composable
@@ -68,15 +67,18 @@ fun AddDebtScreen(
 ) {
     val scope = rememberCoroutineScope()
 
-    val uiState by viewModel.stateCard.collectAsState()
+    val uiCardState by viewModel.stateCard.collectAsState()
 
     LaunchedEffect(scope) {
         viewModel.getAllCard()
     }
 
-    var nameCard by remember { mutableStateOf(uiState.cardList[0].nameCard) }
-    var typeMoney by remember { mutableStateOf(uiState.cardList[0].typeMoney) }
-    var idWallet by remember { mutableIntStateOf(uiState.cardList[0].id) }
+    var nameCard by remember { mutableStateOf(uiCardState.cardList[0].nameCard) }
+    var typeMoney by remember { mutableStateOf(uiCardState.cardList[0].typeMoney) }
+    var idWallet by remember { mutableIntStateOf(uiCardState.cardList[0].id) }
+    val dayExpired by remember { mutableIntStateOf(uiCardState.cardList[0].paidDateExpired) }
+    val dayClose by remember { mutableIntStateOf(uiCardState.cardList[0].dateClose) }
+
     var cost by remember { mutableStateOf("") }
     var quotas by remember { mutableStateOf("1") }
     var category by remember { mutableStateOf(Categories.Debt[0].name) }
@@ -85,8 +87,7 @@ fun AddDebtScreen(
         topBar = {
             TopBar(navController) {
                 // Add debt
-                val date = LocalDate.now().toEpochDay()
-
+                val date = LocalDate.now()
                 viewModel.addDebt(
                     DebtModel(
                         idWallet = idWallet,
@@ -96,7 +97,12 @@ fun AddDebtScreen(
                         type = category,
                         isPaid = 0,
                         quotas = quotas.toInt(),
-                        date = date
+                        date = date.toEpochDay(),
+                        dateExpired = viewModel.getDateExpired(
+                            dayExpired = dayExpired,
+                            dateClose = dayClose,
+                            dateToday = date
+                        ),
                     )
                 )
                 navController.popBackStack()
@@ -118,7 +124,7 @@ fun AddDebtScreen(
                 paddingStart = 8.dp,
                 paddingEnd = 8.dp,
                 paddingTop = 8.dp,
-                listCards = uiState.cardList
+                listCards = uiCardState.cardList
             ) { card ->
                 nameCard = card.nameCard
                 idWallet = card.id

@@ -27,7 +27,10 @@ data class DebtsWalletEntity(
     @ColumnInfo(name = "isPaid")
     val isPaid: Int,
     @ColumnInfo(name = "date")
-    val date: Long
+    val date: Long,
+    @ColumnInfo(name = "dateExpired")
+    val dateExpired: Long,
+
 )
 
 fun DebtsWalletEntity.toDebtsWallet(): DebtModel =
@@ -41,7 +44,8 @@ fun DebtsWalletEntity.toDebtsWallet(): DebtModel =
         quotePaid = quotePaid,
         quotas = quotas,
         isPaid = isPaid,
-        date = date
+        date = date,
+        dateExpired = dateExpired
     )
 
 fun DebtModel.toDebtsWalletEntity(): DebtsWalletEntity =
@@ -55,6 +59,7 @@ fun DebtModel.toDebtsWalletEntity(): DebtsWalletEntity =
         quotePaid = quotePaid,
         quotas = quotas,
         isPaid = isPaid,
-        date = date
+        date = date,
+        dateExpired = dateExpired
     )
 
