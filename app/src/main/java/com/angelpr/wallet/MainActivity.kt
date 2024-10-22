@@ -13,7 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.angelpr.wallet.navigation.NavManager
+import com.angelpr.wallet.presentation.navigation.NavManager
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.WalletTheme
 import dagger.hilt.android.AndroidEntryPoint

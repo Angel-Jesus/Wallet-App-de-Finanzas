@@ -23,6 +23,8 @@ val CardWalletList = listOf(
     Color(0xFF7D5260)
 )
 
+val indicator = Color(0xFF008F80)
+
 val Food = Color(0xFFB9333C)
 val Shopping = Color(0xFF05ADAD)
 val Transportation = Color(0xFFD78800)

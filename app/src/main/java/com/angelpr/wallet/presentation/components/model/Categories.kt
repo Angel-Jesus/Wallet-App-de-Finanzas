@@ -38,6 +38,14 @@ object Categories {
     )
 }
 
+fun getCategory(category: String): Type = when (category) {
+    Categories.Debt[0].name -> Categories.Debt[0]
+    Categories.Debt[1].name -> Categories.Debt[1]
+    Categories.Debt[2].name -> Categories.Debt[2]
+    Categories.Debt[3].name -> Categories.Debt[3]
+    else -> Categories.Debt[4]
+}
+
 data class Type(
     val name: String,
     val icon: Int,

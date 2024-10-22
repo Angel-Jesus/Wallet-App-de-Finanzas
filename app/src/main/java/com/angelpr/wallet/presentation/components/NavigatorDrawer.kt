@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.angelpr.wallet.R
-import com.angelpr.wallet.navigation.AppScreens
+import com.angelpr.wallet.presentation.navigation.ItemsNavScreen
 import com.angelpr.wallet.ui.theme.GreenTopBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -147,7 +147,7 @@ data class NavigationItem(
     val title: String,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector,
-    val route: AppScreens
+    val route: ItemsNavScreen
 )
 
 val items = listOf(
@@ -155,19 +155,19 @@ val items = listOf(
         title = "Home",
         selectedIcon = Icons.Filled.Home,
         unselectedIcon = Icons.Outlined.Home,
-        route = AppScreens.ScreenInit
+        route = ItemsNavScreen.ScreenInit
     ),
     NavigationItem(
         title = "Deudas",
         selectedIcon = Icons.Filled.Delete,
         unselectedIcon = Icons.Outlined.Delete,
-        route = AppScreens.ScreenDebts
+        route = ItemsNavScreen.ScreenDebts
     ),
     NavigationItem(
         title = "Estadistica",
         selectedIcon = Icons.Filled.Info,
         unselectedIcon = Icons.Outlined.Info,
-        route = AppScreens.ScreenStatistics
+        route = ItemsNavScreen.ScreenStatistics
     ),
     /*
     NavigationItem(

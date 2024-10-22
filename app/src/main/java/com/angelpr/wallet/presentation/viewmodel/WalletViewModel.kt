@@ -1,8 +1,5 @@
 package com.angelpr.wallet.presentation.viewmodel
 
-import android.annotation.SuppressLint
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.angelpr.wallet.data.model.ActionProcess
@@ -19,8 +16,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -93,13 +88,14 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    fun getDebtByCard(id: Int) {
+    fun getDebtByCard(idCard: Int, limit: Int = 20) {
         viewModelScope.launch {
             _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
             _stateDebt.update {
                 it.copy(
                     state = ActionProcess.SUCCESS,
-                    debtList = getWalletUseCase.GetDebtCard(id)
+                    debtNotPaidList = getWalletUseCase.GetDebtNotPaidCard(idCard),
+                    debtPaidList = getWalletUseCase.GetDebtPaidCard(idCard, limit)
                 )
             }
         }
@@ -150,7 +146,8 @@ class WalletViewModel @Inject constructor(
     )
 
     data class UiStateDebt(
-        val debtList: List<DebtModel> = emptyList(),
+        val debtNotPaidList: List<DebtModel> = emptyList(),
+        val debtPaidList: List<DebtModel> = emptyList(),
         var state: ActionProcess = ActionProcess.NOT_AVAILABLE
     )
 

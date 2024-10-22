@@ -1,17 +1,16 @@
-package com.angelpr.wallet.navigation
+package com.angelpr.wallet.presentation.navigation
 
-import com.angelpr.wallet.data.model.CardModel
 import kotlinx.serialization.Serializable
 
-sealed class AppScreens {
+sealed class ItemsNavScreen {
     @Serializable
-    data object ScreenInit: AppScreens()
+    data object ScreenInit: ItemsNavScreen()
     @Serializable
-    data object ScreenStatistics: AppScreens()
+    data object ScreenStatistics: ItemsNavScreen()
     @Serializable
-    data object ScreenAddWallet: AppScreens()
+    data object ScreenAddWallet: ItemsNavScreen()
     @Serializable
-    data object ScreenDebts: AppScreens()
+    data object ScreenDebts: ItemsNavScreen()
     @Serializable
     data class ScreenEditCard(
         val id: Int,
@@ -21,9 +20,9 @@ sealed class AppScreens {
         val dateExpiration: String,
         val dateClose: String,
         val colorCard: Long
-    ): AppScreens()
+    ): ItemsNavScreen()
     @Serializable
-    data object ScreenAddDebt: AppScreens()
+    data object ScreenAddDebt: ItemsNavScreen()
     /*
     @Serializable
     data object ScreenSettings: AppScreens()

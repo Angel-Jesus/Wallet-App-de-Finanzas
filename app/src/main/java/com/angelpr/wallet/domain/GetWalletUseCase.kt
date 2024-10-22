@@ -12,10 +12,15 @@ class GetWalletUseCase @Inject constructor(
 ) {
     suspend fun AllCard(): List<CardModel> = repository.getAllCardFromDatabase()
 
-    suspend fun GetLineUseCard(id: Int, dateInit: Long, dateEnd: Long): Float =
-        repository.getLineUseToDatabase(id = id, dateInit = dateInit, dateEnd = dateEnd)
+    suspend fun GetLineUseCard(idCard: Int, dateInit: Long, dateEnd: Long): Float =
+        repository.getLineUseToDatabase(idCard = idCard, dateInit = dateInit, dateEnd = dateEnd)
 
-    suspend fun GetDebtCard(id: Int): List<DebtModel> = repository.getDebtToDatabase(id)
+    suspend fun GetDebtNotPaidCard(idCard: Int): List<DebtModel> =
+        repository.getDebtNotPaidToDatabase(idCard)
 
-    fun GetTotalDebtType(debtList: List<DebtModel>): Map<String, Type> = repository.getTotalDebtType(debtList)
+    suspend fun GetDebtPaidCard(idCard: Int, limit: Int): List<DebtModel> =
+        repository.getDebtPaidToDatabase(idCard = idCard, limit = limit)
+
+    fun GetTotalDebtType(debtList: List<DebtModel>): Map<String, Type> =
+        repository.getTotalDebtType(debtList)
 }

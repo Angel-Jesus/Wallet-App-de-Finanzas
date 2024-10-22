@@ -47,20 +47,20 @@ class WalletRepository @Inject constructor(
 
     // Action by Debts
 
-    suspend fun getLineUseToDatabase(id: Int, dateInit: Long, dateEnd: Long): Float =
-        walletDao.getLineUseCard(id = id, dateInit = dateInit, dateEnd = dateEnd)
+    suspend fun getLineUseToDatabase(idCard: Int, dateInit: Long, dateEnd: Long): Float =
+        walletDao.getLineUseCard(idCard = idCard, dateInit = dateInit, dateEnd = dateEnd)
 
-    suspend fun getDateDebtToDatabase(id: Int, dateInit: Long, dateEnd: Long): List<DebtModel> {
-        val response: List<DebtsWalletEntity> =
-            walletDao.getDebtCardByDate(id = id, dateInit = dateInit, dateEnd = dateEnd)
+
+    suspend fun getDebtNotPaidToDatabase(idCard: Int): List<DebtModel> {
+        val response: List<DebtsWalletEntity> = walletDao.getDebtNotPaidCardById(idCard = idCard)
         if (response.isNotEmpty()) {
             return response.map { it.toDebtsWallet() }
         }
         return emptyList()
     }
 
-    suspend fun getDebtToDatabase(id: Int): List<DebtModel> {
-        val response: List<DebtsWalletEntity> = walletDao.getDebtCardById(id)
+    suspend fun getDebtPaidToDatabase(idCard: Int, limit: Int): List<DebtModel> {
+        val response: List<DebtsWalletEntity> = walletDao.getDebtPaidCardById(idCard = idCard, limit = limit)
         if (response.isNotEmpty()) {
             return response.map { it.toDebtsWallet() }
         }

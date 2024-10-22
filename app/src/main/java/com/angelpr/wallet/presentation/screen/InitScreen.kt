@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,7 +24,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DrawerState
@@ -34,7 +32,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -58,9 +55,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.angelpr.wallet.data.model.CardModel
-import com.angelpr.wallet.navigation.AppScreens
+import com.angelpr.wallet.presentation.navigation.ItemsNavScreen
 import com.angelpr.wallet.presentation.components.NavigatorDrawer
 import com.angelpr.wallet.presentation.components.PieChart
 import com.angelpr.wallet.presentation.components.model.Categories
@@ -107,8 +103,8 @@ fun ScreenInit(
     }
 
     LaunchedEffect(uiDebtState) {
-        if (uiDebtState.debtList.isNotEmpty()) {
-            viewModel.getDebtByType(uiDebtState.debtList)
+        if (uiDebtState.debtNotPaidList.isNotEmpty()) {
+            viewModel.getDebtByType(uiDebtState.debtNotPaidList)
         }
     }
 
@@ -218,7 +214,7 @@ private fun TitleCards(
                 modifier = Modifier
                     .size(32.dp),
                 onClick = {
-                    navController.navigate(AppScreens.ScreenAddWallet)
+                    navController.navigate(ItemsNavScreen.ScreenAddWallet)
                 },
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, Color.LightGray)
@@ -239,7 +235,7 @@ private fun TitleCards(
                     // Pass parameter of card to editScreen
                     if(uiState.cardList.isNotEmpty()){
                         navController.navigate(
-                            AppScreens.ScreenEditCard(
+                            ItemsNavScreen.ScreenEditCard(
                                 id = uiState.cardList[indexCard].id,
                                 nameWallet = uiState.cardList[indexCard].nameCard,
                                 creditLine = uiState.cardList[indexCard].creditLineCard,

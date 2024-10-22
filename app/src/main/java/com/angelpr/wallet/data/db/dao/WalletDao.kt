@@ -25,17 +25,14 @@ interface WalletDao {
     suspend fun deleteCard(id: Int)
 
     // Debt Card into the database
-    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :id AND isPaid = 0")
-    suspend fun getDebtCardById(id: Int): List<DebtsWalletEntity>
+    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :idCard AND isPaid = 0")
+    suspend fun getDebtNotPaidCardById(idCard: Int): List<DebtsWalletEntity>
 
-    @Query("SELECT SUM(CASE WHEN quotas > 1 THEN debt/quotas ELSE debt END) AS total_debt FROM debtsWallet_table WHERE idWallet = :id AND date BETWEEN :dateInit AND :dateEnd")
-    suspend fun getLineUseCard(id: Int, dateInit: Long, dateEnd: Long): Float
+    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :idCard AND isPaid = 1 ORDER BY id DESC LIMIT :limit")
+    suspend fun getDebtPaidCardById(idCard: Int, limit: Int): List<DebtsWalletEntity>
 
-    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :id AND isPaid = 0 AND date BETWEEN :dateInit AND :dateEnd")
-    suspend fun getDebtCardByDate(id: Int, dateInit: Long, dateEnd: Long): List<DebtsWalletEntity>
-
-    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :id AND isPaid = 1 AND date BETWEEN :dateInit AND :dateEnd")
-    suspend fun getDebtPaidCardByDate(id: Int, dateInit: Long, dateEnd: Long): List<DebtsWalletEntity>
+    @Query("SELECT SUM(CASE WHEN quotas > 1 THEN debt/quotas ELSE debt END) AS total_debt FROM debtsWallet_table WHERE idWallet = :idCard AND date BETWEEN :dateInit AND :dateEnd")
+    suspend fun getLineUseCard(idCard: Int, dateInit: Long, dateEnd: Long): Float
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDebtCard(debtCard: DebtsWalletEntity)
