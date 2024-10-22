@@ -1,6 +1,7 @@
 package com.angelpr.wallet.presentation.components
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,8 +17,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,12 +29,12 @@ import com.angelpr.wallet.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ErrorDialog(
+fun MessageDialog(
     onDismissRequest: () -> Unit,
+    positiveButton: () -> Unit,
     title: String,
     text: String
 ) {
-
     BasicAlertDialog(
         onDismissRequest = onDismissRequest
     ) {
@@ -77,12 +76,25 @@ fun ErrorDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                TextButton(
-                    onClick = onDismissRequest,
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text("Cerrar")
+                Row(
+                    modifier = Modifier
+                        .align(alignment = Alignment.End)
+                ){
+                    TextButton(
+                        onClick = onDismissRequest,
+
+                    ) {
+                        Text("Cancelar")
+                    }
+
+                    TextButton(
+                        onClick = positiveButton,
+                    ) {
+                        Text("Confirmar")
+                    }
                 }
+
+
             }
         }
     }
@@ -90,12 +102,12 @@ fun ErrorDialog(
 
 @Preview(showBackground = true)
 @Composable
-fun ErrorDialogPreview() {
-    val enable = remember { mutableStateOf(true) }
-    ErrorDialog(
+fun MessageDialogPreview() {
+    MessageDialog(
         onDismissRequest = {},
-        title = "Tener en cuenta",
-        text = "Para añadir una tarjeta, es necesario tener una tarjeta guardada"
+        positiveButton = {},
+        title = "Eliminar tarjeta",
+        text = "Si elimina la tarjeta se eliminarán todos los registros de deuda vinculadas a ella. ¿Desea continuar?"
     )
 
 }

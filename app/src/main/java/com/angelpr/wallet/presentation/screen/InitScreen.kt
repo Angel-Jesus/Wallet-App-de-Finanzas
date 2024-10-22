@@ -1,12 +1,11 @@
 package com.angelpr.wallet.presentation.screen
 
 import android.icu.text.DecimalFormat
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -17,6 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -61,13 +62,15 @@ import androidx.navigation.compose.rememberNavController
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.navigation.AppScreens
 import com.angelpr.wallet.presentation.components.NavigatorDrawer
+import com.angelpr.wallet.presentation.components.PieChart
+import com.angelpr.wallet.presentation.components.model.Categories
+import com.angelpr.wallet.presentation.components.model.Type
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.ContainerColor
 import com.angelpr.wallet.ui.theme.GreenTopBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ScreenInit(
@@ -78,20 +81,34 @@ fun ScreenInit(
 ) {
     val scope = rememberCoroutineScope()
 
+    // Get uiState of Card
     val uiState by viewModel.stateCard.collectAsState()
     val lineUsedCard by viewModel.totalDebtCard.collectAsState()
+
+    // Get uiState of Debt
+    val uiDebtState by viewModel.stateDebt.collectAsState()
+    val debtTypeList by viewModel.totalDebtType.collectAsState()
 
     var colorContainer by remember { mutableStateOf(Color.Gray.value) }
     var indexCard by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(scope) {
+    LaunchedEffect(Unit) {
         viewModel.getAllCard()
     }
 
-    LaunchedEffect(uiState) {
+    LaunchedEffect(uiState.cardList) {
         if(uiState.cardList.isNotEmpty()) {
+            // Save cardId to use in DebtScreen
             cardId.intValue = uiState.cardList[indexCard].id
+
             viewModel.getLineUseCard(cardId.intValue, uiState.cardList[indexCard].dateClose)
+            viewModel.getDebtByCard(cardId.intValue)
+        }
+    }
+
+    LaunchedEffect(uiDebtState) {
+        if (uiDebtState.debtList.isNotEmpty()) {
+            viewModel.getDebtByType(uiDebtState.debtList)
         }
     }
 
@@ -116,7 +133,6 @@ fun ScreenInit(
                 item {
                     TitleCards(navController, uiState, indexCard)
                 }
-
                 item {
                     Card(
                         modifier = Modifier
@@ -146,7 +162,6 @@ fun ScreenInit(
 
                                 CardWalletItem(colorContainer, cardWallet) {
                                     indexCard = index
-                                    Log.d("DebtScreen", "idCard1: ${cardWallet.id}")
                                 }
                             }
                         }
@@ -156,12 +171,17 @@ fun ScreenInit(
                 if (uiState.cardList.isNotEmpty()) {
                     item {
                         // Save cardId to use in DebtScreen
-                        cardId.intValue = uiState.cardList[indexCard].id
+                        // cardId.intValue = uiState.cardList[indexCard].id
                         // Show current balance
                         CurrentBalanceCard(lineUsedCard = lineUsedCard, card = uiState.cardList[indexCard])
                     }
                 }
 
+                if(debtTypeList.isNotEmpty()){
+                    item {
+                        CardDebtType(debtTypeList)
+                    }
+                }
             }
         }
     }
@@ -242,18 +262,6 @@ private fun TitleCards(
             }
 
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun previewTitleCards() {
-    MaterialTheme {
-        TitleCards(
-            navController = rememberNavController(),
-            uiState = WalletViewModel.UiStateCard(),
-            indexCard = 0
-        )
     }
 }
 
@@ -346,6 +354,7 @@ fun CurrentBalanceCard(lineUsedCard: Float, card: CardModel?) {
                 color = Color.Gray
             )
         }
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
@@ -386,6 +395,57 @@ fun CardWalletItem(
 }
 
 @Composable
+private fun CardDebtType(data: Map<String, Type>){
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 15.dp
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(),
+        ) {
+            Text(
+                modifier = Modifier
+                    .padding(start = 8.dp, top = 8.dp, bottom = 28.dp)
+                    .fillMaxWidth()
+                    .wrapContentSize(align = Alignment.TopStart),
+                text = "Estructura de deuda",
+                fontWeight = FontWeight.Bold
+            )
+
+            PieChart(
+                data = data
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+        }
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewTitleCards() {
+    MaterialTheme {
+        CardDebtType(
+            data = mapOf(
+                "Compras" to Categories.Debt[0].copy(value = 30.02f)
+            )
+        )
+    }
+}
+
+
+@Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TopBar(
     scope: CoroutineScope,
@@ -419,39 +479,7 @@ private fun TopBar(
     )
 }
 
-/*
-@Preview(showBackground = true)
-@Composable
-fun PreviewCard() {
-    MaterialTheme {
-        CurrentBalanceCard(
-            card = CardModel(
-                nameCard = "Bbva BeFree",
-                creditLineCard = "1000",
-                typeMoney = "PEN",
 
-                colorCard = Color.DarkGray.value
-            )
-        )
-    }
-}
- */
-
-/*
-@Preview(showBackground = true)
-@Composable
-fun ScreenInitPreview(){
-
-    MaterialTheme {
-        ScreenInit(
-            scope = rememberCoroutineScope(),
-            drawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
-            navController = rememberNavController()
-        )
-    }
-}
-
- */
 
 
 

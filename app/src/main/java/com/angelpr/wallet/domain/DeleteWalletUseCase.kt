@@ -8,4 +8,5 @@ class DeleteWalletUseCase @Inject constructor(
     private val repository: WalletRepository
 ) {
     suspend fun Card(id: Int): ActionProcess = repository.deleteCardToDatabase(id)
+    suspend fun AllDebtByCard(idCard: Int): ActionProcess = repository.deleteAllDebtToDatabase(idCard)
 }

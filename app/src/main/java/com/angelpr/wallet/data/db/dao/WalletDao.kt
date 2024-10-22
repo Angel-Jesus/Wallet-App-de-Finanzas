@@ -34,13 +34,20 @@ interface WalletDao {
     @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :id AND isPaid = 0 AND date BETWEEN :dateInit AND :dateEnd")
     suspend fun getDebtCardByDate(id: Int, dateInit: Long, dateEnd: Long): List<DebtsWalletEntity>
 
+    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :id AND isPaid = 1 AND date BETWEEN :dateInit AND :dateEnd")
+    suspend fun getDebtPaidCardByDate(id: Int, dateInit: Long, dateEnd: Long): List<DebtsWalletEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDebtCard(debtCard: DebtsWalletEntity)
 
-    @Query("UPDATE debtsWallet_table SET isPaid = :isPaid WHERE id = :id")
-    suspend fun updateDebtCard(id: Int, isPaid: Int)
+    @Query("UPDATE debtsWallet_table SET isPaid = :isPaid, quotePaid = :quotasPaid WHERE id = :id")
+    suspend fun updateDebtCard(id: Int, quotasPaid: Int, isPaid: Int)
 
     @Query("DELETE FROM debtsWallet_table WHERE id = :id")
     suspend fun deleteDebtCard(id: Int)
+
+    @Query("DELETE FROM debtsWallet_table WHERE idWallet = :idCard")
+    suspend fun deleteAllDebtCard(idCard: Int)
+
 
 }

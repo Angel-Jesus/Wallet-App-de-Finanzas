@@ -86,7 +86,7 @@ class WalletViewModel @Inject constructor(
     }
 
     // Action by Debts
-    fun addDebt(debt: DebtModel){
+    fun addDebt(debt: DebtModel) {
         viewModelScope.launch {
             _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
             _stateDebt.update { it.copy(state = sendWalletUseCase.Debt(debt)) }
@@ -96,32 +96,52 @@ class WalletViewModel @Inject constructor(
     fun getDebtByCard(id: Int) {
         viewModelScope.launch {
             _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
-            _stateDebt.update { it.copy(state = ActionProcess.SUCCESS, debtList = getWalletUseCase.GetDebtCard(id)) }
+            _stateDebt.update {
+                it.copy(
+                    state = ActionProcess.SUCCESS,
+                    debtList = getWalletUseCase.GetDebtCard(id)
+                )
+            }
         }
     }
 
-    fun getDebtByType(debtList: List<DebtModel>){
+    fun getDebtByType(debtList: List<DebtModel>) {
         _totalDebtType.update { getWalletUseCase.GetTotalDebtType(debtList) }
     }
 
-    fun updateDebtState(id: Int, isPaid: Int) {
+    fun updateDebtState(id: Int, quotas: Int, quotasPaid: Int) {
         viewModelScope.launch {
-            _stateCard.update { it.copy(state = ActionProcess.LOADING) }
-            _stateCard.update { it.copy(state = updateWalletUseCase.DebtState(id, isPaid)) }
+            _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
+            _stateDebt.update {
+                it.copy(
+                    state = updateWalletUseCase.DebtState(
+                        id,
+                        quotas,
+                        quotasPaid
+                    )
+                )
+            }
         }
     }
 
     // Extra Function
-    fun getDateExpired(dayExpired: Int, dateClose: Int, dateToday: LocalDate):Long{
+    fun getDateExpired(dayExpired: Int, dateClose: Int, dateToday: LocalDate): Long {
         val dateMonthToday = LocalDate.of(dateToday.year, dateToday.month.value, dayExpired)
 
-        val date = if(dateToday.dayOfMonth > dateClose){
+        val date = if (dateToday.dayOfMonth > dateClose) {
             dateMonthToday.plusMonths(2)
-        }else{
+        } else {
             dateMonthToday.plusMonths(1)
         }
 
         return date.toEpochDay()
+    }
+
+    fun deleteAllDebt(idCard: Int) {
+        viewModelScope.launch {
+            _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
+            _stateDebt.update { it.copy(state = deleteWalletUseCase.AllDebtByCard(idCard)) }
+        }
     }
 
     data class UiStateCard(

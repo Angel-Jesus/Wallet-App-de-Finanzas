@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import androidx.navigation.NavController
 import com.angelpr.wallet.data.model.CardModel
+import com.angelpr.wallet.presentation.components.MessageDialog
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.CardWalletList
 import com.angelpr.wallet.ui.theme.GreenTopBar
@@ -64,13 +65,29 @@ fun EditCardScreen(
     var dateClose by remember { mutableStateOf(cardModel.dateClose.toString()) }
     var colorCard by remember { mutableStateOf(cardModel.colorCard) }
 
+    var showMessageDialog by remember { mutableStateOf(false) }
+
+    if(showMessageDialog){
+        MessageDialog(
+            onDismissRequest = { showMessageDialog = false },
+            positiveButton = {
+                showMessageDialog = false
+                viewModel.deleteCard(cardModel.id)
+                viewModel.deleteAllDebt(cardModel.id)
+                navController.popBackStack()
+            },
+            title = "Eliminar tarjeta",
+            text = "Si elimina la tarjeta se eliminarán todos los registros de deuda vinculadas a ella. ¿Desea continuar?"
+        )
+    }
+
+
     Scaffold(
         topBar = {
             TopBar(
                 navController = navController,
                 deleteData = {
-                    viewModel.deleteCard(cardModel.id)
-                    navController.popBackStack()
+                    showMessageDialog = true
                 },
                 saveData = {
                     viewModel.updateCard(

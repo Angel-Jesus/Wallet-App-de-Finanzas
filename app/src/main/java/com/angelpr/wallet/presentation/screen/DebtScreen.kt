@@ -1,10 +1,12 @@
 package com.angelpr.wallet.presentation.screen
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
@@ -31,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -49,7 +53,8 @@ import com.angelpr.wallet.R
 import com.angelpr.wallet.data.model.DebtModel
 import com.angelpr.wallet.navigation.AppScreens
 import com.angelpr.wallet.presentation.components.EmptyStateScreen
-import com.angelpr.wallet.presentation.components.ErrorDialog
+import com.angelpr.wallet.presentation.components.MessageDialog
+import com.angelpr.wallet.presentation.components.WarningDialog
 import com.angelpr.wallet.presentation.components.NavigatorDrawer
 import com.angelpr.wallet.presentation.components.PieChart
 import com.angelpr.wallet.presentation.components.model.Categories
@@ -78,28 +83,52 @@ fun DebtScreen(
     var enable by remember { mutableStateOf(false) }
     var enableButton by remember { mutableStateOf(false) }
     var showWarning by remember { mutableStateOf(false) }
+    var showMessageDialog by remember { mutableStateOf(false) }
+    var indexDebt by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(scope) {
+
+    LaunchedEffect(Unit) {
         viewModel.getAllCard()
-        viewModel.getDebtByCard(cardId)
     }
 
     LaunchedEffect(uiDebtState) {
+        viewModel.getDebtByCard(cardId)
+    }
+
+    LaunchedEffect(uiDebtState.debtList) {
+
         if (uiDebtState.debtList.isNotEmpty()) {
             enable = true
             viewModel.getDebtByType(uiDebtState.debtList)
         }
     }
 
-    if(uiCardState.cardList.isNotEmpty()){
+    if (uiCardState.cardList.isNotEmpty()) {
         enableButton = true
     }
 
     if (showWarning) {
-        ErrorDialog(
+        WarningDialog(
             title = "Tener en cuenta",
-            text = "Para añadir una tarjeta, es necesario tener una tarjeta guardada",
+            text = "Para añadir una deuda, es necesario tener una tarjeta guardada",
             onDismissRequest = { showWarning = false }
+        )
+    }
+
+    if (showMessageDialog) {
+        MessageDialog(
+            onDismissRequest = { showMessageDialog = false },
+            positiveButton = {
+                // Update state of card's debt
+                viewModel.updateDebtState(
+                    id = uiDebtState.debtList[indexDebt].id,
+                    quotas = uiDebtState.debtList[indexDebt].quotas,
+                    quotasPaid = uiDebtState.debtList[indexDebt].quotePaid + 1
+                )
+                showMessageDialog = false
+            },
+            title = "Pago de cuota",
+            text = "Si la quota es solo una se habrá pagado toda la deuda, en caso contrario, solo se registrará el pago de una quota"
         )
     }
 
@@ -139,7 +168,13 @@ fun DebtScreen(
                 modifier = Modifier
                     .padding(innerPadding)
                     .fillMaxSize()
-                    .wrapContentSize(align = if(enable) { Alignment.TopStart } else {Alignment.Center})
+                    .wrapContentSize(
+                        align = if (enable) {
+                            Alignment.TopStart
+                        } else {
+                            Alignment.Center
+                        }
+                    )
             ) {
                 if (enable) {
                     item {
@@ -149,29 +184,34 @@ fun DebtScreen(
                                 .height(270.dp),
                             verticalArrangement = Arrangement.Center
                         ) {
-                            if (enable) {
-                                PieChart(
-                                    data = debtTypeList
-                                )
-                            }
-
+                            Spacer(modifier = Modifier.height(10.dp))
+                            PieChart(
+                                data = debtTypeList,
+                                chartBarWidth = 30.dp
+                            )
                         }
-
                     }
 
                     item {
                         Text(
                             modifier = Modifier
-                                .padding(start = 8.dp, top = 8.dp),
+                                .padding(start = 8.dp),
                             text = "Deudas pendientes",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
 
-                    items(uiDebtState.debtList) { debtModel ->
-                        CardDebt(debtModel)
+                    itemsIndexed(uiDebtState.debtList) { index, debtModel ->
+                        CardDebtItem(
+                            onClick = {
+                                showMessageDialog = true
+                                indexDebt = index
+                            },
+                            debtModel = debtModel
+                        )
                     }
+
                 } else {
                     item {
                         EmptyStateScreen(
@@ -188,8 +228,10 @@ fun DebtScreen(
 
 @SuppressLint("NewApi")
 @Composable
-private fun CardDebt(debtModel: DebtModel) {
-
+private fun CardDebtItem(
+    onClick: () -> Unit,
+    debtModel: DebtModel
+) {
     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
     val date = LocalDate.ofEpochDay(debtModel.date)
     val dateExpired = LocalDate.ofEpochDay(debtModel.dateExpired)
@@ -197,6 +239,7 @@ private fun CardDebt(debtModel: DebtModel) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick() }
     ) {
         Column(
             modifier = Modifier
@@ -296,30 +339,6 @@ private fun getCategory(category: String): Type = when (category) {
     else -> Categories.Debt[4]
 }
 
-
-@SuppressLint("NewApi")
-@Preview(showBackground = true)
-@Composable
-fun DebtCardPreview() {
-    MaterialTheme {
-        CardDebt(
-            DebtModel(
-                idWallet = 1,
-                nameCard = "Bbva Befree",
-                typeMoney = "PEN",
-                debt = 12.5f,
-                type = Categories.Debt[0].name,
-                quotePaid = 0,
-                quotas = 0,
-                isPaid = 0,
-                date = LocalDate.of(2024, 10, 18).toEpochDay(),
-                dateExpired = LocalDate.of(2024, 12, 5).toEpochDay()
-            )
-        )
-    }
-}
-
-
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TopBar(
@@ -352,17 +371,4 @@ private fun TopBar(
     )
 }
 
-/*
-@Preview(showBackground = true)
-@Composable
-fun previewDebtScreen() {
-    MaterialTheme {
-        DebtScreen(
-            drawerState = rememberDrawerState(DrawerValue.Closed),
-            navController = rememberNavController()
-        )
-    }
-}
-
- */
 
