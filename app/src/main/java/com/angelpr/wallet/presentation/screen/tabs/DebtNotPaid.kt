@@ -56,13 +56,20 @@ fun DebtNotPaid(
             .fillMaxSize()
             .wrapContentSize(
                 align = if (emptyStateNotPaid) {
-                    Alignment.TopStart
-                } else {
                     Alignment.Center
+                } else {
+                    Alignment.TopStart
                 }
             )
     ) {
         if (emptyStateNotPaid) {
+            item {
+                EmptyStateScreen(
+                    title = "Nada registrado",
+                    text = "No tiene deuda pendiente o registrada"
+                )
+            }
+        } else {
             item {
                 Column(
                     modifier = Modifier
@@ -95,14 +102,6 @@ fun DebtNotPaid(
                         indexDebt.intValue = index
                     },
                     debtModel = debtModel
-                )
-            }
-
-        } else {
-            item {
-                EmptyStateScreen(
-                    title = "Nada registrado",
-                    text = "No tiene deuda pendiente o registrada"
                 )
             }
         }

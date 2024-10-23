@@ -55,7 +55,6 @@ fun AddWalletScreen(
     viewModel: WalletViewModel,
     navController: NavController
 ) {
-
     var nameWallet by remember { mutableStateOf("") }
     var creditLine by remember { mutableStateOf("0") }
     var typeMoney by remember { mutableStateOf("PEN") }

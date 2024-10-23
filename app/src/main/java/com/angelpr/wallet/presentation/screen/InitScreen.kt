@@ -42,7 +42,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -55,6 +54,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.angelpr.wallet.data.model.ActionProcess
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.presentation.navigation.ItemsNavScreen
 import com.angelpr.wallet.presentation.components.NavigatorDrawer
@@ -70,6 +70,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ScreenInit(
+    indexCard: MutableIntState,
     cardId: MutableIntState,
     viewModel: WalletViewModel,
     drawerState: DrawerState,
@@ -78,35 +79,42 @@ fun ScreenInit(
     val scope = rememberCoroutineScope()
 
     // Get uiState of Card
-    val uiState by viewModel.stateCard.collectAsState()
+    val uiCardState by viewModel.stateCard.collectAsState()
     val lineUsedCard by viewModel.totalDebtCard.collectAsState()
 
     // Get uiState of Debt
     val uiDebtState by viewModel.stateDebt.collectAsState()
     val debtTypeList by viewModel.totalDebtType.collectAsState()
 
+    var showDebtType by remember { mutableStateOf(false) }
     var colorContainer by remember { mutableStateOf(Color.Gray.value) }
-    var indexCard by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit){
         viewModel.getAllCard()
     }
 
-    LaunchedEffect(uiState.cardList) {
-        if(uiState.cardList.isNotEmpty()) {
+    LaunchedEffect(key1 = uiCardState.state, key2 = indexCard.intValue) {
+        if (uiCardState.cardList.isNotEmpty()) {
             // Save cardId to use in DebtScreen
-            cardId.intValue = uiState.cardList[indexCard].id
+            cardId.intValue = uiCardState.cardList[indexCard.intValue].id
 
-            viewModel.getLineUseCard(cardId.intValue, uiState.cardList[indexCard].dateClose)
+            viewModel.getLineUseCard(
+                cardId.intValue,
+                uiCardState.cardList[indexCard.intValue].dateClose
+            )
             viewModel.getDebtByCard(cardId.intValue)
         }
     }
 
-    LaunchedEffect(uiDebtState) {
-        if (uiDebtState.debtNotPaidList.isNotEmpty()) {
+    LaunchedEffect(uiDebtState.state) {
+        if (uiDebtState.debtNotPaidList.isNotEmpty() && uiDebtState.state == ActionProcess.DEBT_BY_CARD) {
+            showDebtType = true
             viewModel.getDebtByType(uiDebtState.debtNotPaidList)
+        }else{
+            showDebtType = false
         }
     }
+
 
     NavigatorDrawer(
         itemSelected = 0,
@@ -127,7 +135,7 @@ fun ScreenInit(
                     .fillMaxSize()
             ) {
                 item {
-                    TitleCards(navController, uiState, indexCard)
+                    TitleCards(navController, uiCardState, indexCard.intValue)
                 }
                 item {
                     Card(
@@ -147,33 +155,34 @@ fun ScreenInit(
                             maxItemsInEachRow = 2
                         ) {
 
-                            uiState.cardList.forEachIndexed { index, cardWallet ->
+                            uiCardState.cardList.forEachIndexed { index, cardWallet ->
 
                                 // Check which buttom is available
-                                colorContainer = if(indexCard == index){
+                                colorContainer = if (indexCard.intValue == index) {
                                     cardWallet.colorCard
-                                }else{
+                                } else {
                                     Color.Gray.value
                                 }
 
                                 CardWalletItem(colorContainer, cardWallet) {
-                                    indexCard = index
+                                    indexCard.intValue = index
                                 }
                             }
                         }
                     }
                 }
 
-                if (uiState.cardList.isNotEmpty()) {
+                if (uiCardState.cardList.isNotEmpty()) {
                     item {
-                        // Save cardId to use in DebtScreen
-                        // cardId.intValue = uiState.cardList[indexCard].id
                         // Show current balance
-                        CurrentBalanceCard(lineUsedCard = lineUsedCard, card = uiState.cardList[indexCard])
+                        CurrentBalanceCard(
+                            lineUsedCard = lineUsedCard,
+                            card = uiCardState.cardList[indexCard.intValue]
+                        )
                     }
                 }
 
-                if(debtTypeList.isNotEmpty()){
+                if (showDebtType) {
                     item {
                         CardDebtType(debtTypeList)
                     }
@@ -233,7 +242,7 @@ private fun TitleCards(
                     .size(32.dp),
                 onClick = {
                     // Pass parameter of card to editScreen
-                    if(uiState.cardList.isNotEmpty()){
+                    if (uiState.cardList.isNotEmpty()) {
                         navController.navigate(
                             ItemsNavScreen.ScreenEditCard(
                                 id = uiState.cardList[indexCard].id,
@@ -269,8 +278,6 @@ fun CurrentBalanceCard(lineUsedCard: Float, card: CardModel?) {
 
     val lineAvailable = totalLine - lineUsedCard
     val percentUsed = (lineUsedCard / totalLine)
-
-    Log.i("percentUsed", percentUsed.toString())
 
     Card(
         modifier = Modifier
@@ -391,7 +398,7 @@ fun CardWalletItem(
 }
 
 @Composable
-private fun CardDebtType(data: Map<String, Type>){
+private fun CardDebtType(data: Map<String, Type>) {
     Card(
         modifier = Modifier
             .fillMaxWidth()

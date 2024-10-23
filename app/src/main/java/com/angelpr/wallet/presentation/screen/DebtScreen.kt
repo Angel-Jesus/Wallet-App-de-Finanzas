@@ -1,5 +1,6 @@
 package com.angelpr.wallet.presentation.screen
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.angelpr.wallet.data.model.ActionProcess
 import com.angelpr.wallet.presentation.components.MessageDialog
 import com.angelpr.wallet.presentation.components.NavigatorDrawer
 import com.angelpr.wallet.presentation.components.WarningDialog
@@ -70,31 +72,36 @@ fun DebtScreen(
     val uiDebtState by viewModel.stateDebt.collectAsState()
     val debtTypeList by viewModel.totalDebtType.collectAsState()
 
-    var emptyStateNotPaid by remember { mutableStateOf(false) }
-    var emptyStatePaid by remember { mutableStateOf(false) }
+    var emptyStateNotPaid by remember { mutableStateOf(true) }
+    var emptyStatePaid by remember { mutableStateOf(true) }
 
     var enableButton by remember { mutableStateOf(false) }
     var showWarning by remember { mutableStateOf(false) }
     val showPaidQuotaDialog = remember { mutableStateOf(false) }
     val indexDebt = remember { mutableIntStateOf(0) }
 
-    val pagerState = rememberPagerState(initialPage = 0, pageCount = {itemsTabScreens.size})
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { itemsTabScreens.size })
 
+    Log.i("DebtScreen", "card: ${uiCardState.cardList}")
 
-    LaunchedEffect(Unit) {
-        viewModel.getAllCard()
-        viewModel.getDebtByCard(idCard = cardId, limit = 20)
-    }
+    LaunchedEffect(uiDebtState.state) {
 
-    LaunchedEffect(uiDebtState.debtNotPaidList) {
-        if (uiDebtState.debtNotPaidList.isNotEmpty()) {
-            emptyStateNotPaid = true
-            viewModel.getDebtByType(uiDebtState.debtNotPaidList)
+        Log.i("DebtScreen", "state: ${uiDebtState.state.name}")
+
+        if(uiDebtState.state == ActionProcess.SUCCESS || uiDebtState.state == ActionProcess.UPDATE_DEBT_BY_CARD){
+            viewModel.getDebtByCard(idCard = cardId, limit = 20)
         }
-    }
 
-    LaunchedEffect(uiDebtState.debtPaidList) {
-        if (uiDebtState.debtPaidList.isNotEmpty()) {
+        if (uiDebtState.debtNotPaidList.isNotEmpty() && uiDebtState.state == ActionProcess.DEBT_BY_CARD) {
+            emptyStateNotPaid = false
+            viewModel.getDebtByType(uiDebtState.debtNotPaidList)
+        }else{
+            emptyStateNotPaid = true
+        }
+
+        if (uiDebtState.debtPaidList.isNotEmpty() && uiDebtState.state == ActionProcess.DEBT_BY_CARD) {
+            emptyStatePaid = false
+        }else{
             emptyStatePaid = true
         }
     }
@@ -202,11 +209,12 @@ fun Tabs(
                 )
 
                 if (selectedTab < tabPositions.size) {
-                    Box(modifier = Modifier
-                        .tabIndicatorOffset(tabPositions[selectedTab])
-                        .fillMaxWidth()
-                        .height(4.dp)
-                        .background(gradient)
+                    Box(
+                        modifier = Modifier
+                            .tabIndicatorOffset(tabPositions[selectedTab])
+                            .fillMaxWidth()
+                            .height(4.dp)
+                            .background(gradient)
                     )
                 }
             }
@@ -232,13 +240,15 @@ fun Tabs(
 @Preview(showBackground = true)
 @Composable
 fun TabsPreview() {
-    MaterialTheme{
+    MaterialTheme {
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
             Tabs(
                 scope = rememberCoroutineScope(),
-                pagerState = rememberPagerState(initialPage = 0, pageCount = {itemsTabScreens.size})
+                pagerState = rememberPagerState(
+                    initialPage = 0,
+                    pageCount = { itemsTabScreens.size })
             )
         }
 

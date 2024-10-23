@@ -47,13 +47,20 @@ fun DebtPaid(
             .fillMaxSize()
             .wrapContentSize(
                 align = if (emptyStatePaid) {
-                    Alignment.TopStart
-                } else {
                     Alignment.Center
+                } else {
+                    Alignment.TopStart
                 }
             )
     ) {
         if (emptyStatePaid) {
+            item {
+                EmptyStateScreen(
+                    title = "Nada registrado",
+                    text = "No tiene deudas canceladas"
+                )
+            }
+        } else {
             item {
                 Text(
                     modifier = Modifier
@@ -63,18 +70,9 @@ fun DebtPaid(
                     fontWeight = FontWeight.Bold
                 )
             }
-
             items(uiDebtState.debtPaidList){ debtModel ->
                 CardDebtPaidtItem(
                     debtModel = debtModel
-                )
-            }
-
-        } else {
-            item {
-                EmptyStateScreen(
-                    title = "Nada registrado",
-                    text = "No tiene deudas canceladas"
                 )
             }
         }

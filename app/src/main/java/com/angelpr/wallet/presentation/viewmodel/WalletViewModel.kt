@@ -38,12 +38,13 @@ class WalletViewModel @Inject constructor(
     private val _totalDebtType = MutableStateFlow(emptyMap<String, Type>())
     val totalDebtType = _totalDebtType.asStateFlow()
 
+
     // Action by Cards
     fun getAllCard() {
         viewModelScope.launch {
             _stateCard.update { it.copy(state = ActionProcess.LOADING) }
             val result = getWalletUseCase.AllCard()
-            _stateCard.update { it.copy(state = ActionProcess.SUCCESS, cardList = result) }
+            _stateCard.update { it.copy(state = ActionProcess.ALL_CARD, cardList = result) }
         }
     }
 
@@ -93,7 +94,7 @@ class WalletViewModel @Inject constructor(
             _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
             _stateDebt.update {
                 it.copy(
-                    state = ActionProcess.SUCCESS,
+                    state = ActionProcess.DEBT_BY_CARD,
                     debtNotPaidList = getWalletUseCase.GetDebtNotPaidCard(idCard),
                     debtPaidList = getWalletUseCase.GetDebtPaidCard(idCard, limit)
                 )
@@ -120,6 +121,13 @@ class WalletViewModel @Inject constructor(
         }
     }
 
+    fun deleteAllDebt(idCard: Int) {
+        viewModelScope.launch {
+            _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
+            _stateDebt.update { it.copy(state = deleteWalletUseCase.AllDebtByCard(idCard)) }
+        }
+    }
+
     // Extra Function
     fun getDateExpired(dayExpired: Int, dateClose: Int, dateToday: LocalDate): Long {
         val dateMonthToday = LocalDate.of(dateToday.year, dateToday.month.value, dayExpired)
@@ -131,13 +139,6 @@ class WalletViewModel @Inject constructor(
         }
 
         return date.toEpochDay()
-    }
-
-    fun deleteAllDebt(idCard: Int) {
-        viewModelScope.launch {
-            _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
-            _stateDebt.update { it.copy(state = deleteWalletUseCase.AllDebtByCard(idCard)) }
-        }
     }
 
     data class UiStateCard(

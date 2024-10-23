@@ -83,7 +83,7 @@ fun NavigatorDrawer(
                                     .padding(start = 16.dp, end = 16.dp)
                                     .height(60.dp)
                                     .fillMaxWidth(0.2f),
-                                painter = painterResource(id = R.drawable.wallet),
+                                painter = painterResource(id = R.drawable.logo_wallet),
                                 contentDescription = "Logo App"
                             )
 

@@ -8,6 +8,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.compose.NavHost
@@ -30,6 +31,7 @@ fun NavManager(viewModel: WalletViewModel) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val cardSelected = rememberSaveable{ mutableIntStateOf(0) }
+    val indexCard = rememberSaveable{ mutableIntStateOf(0) }
 
     NavHost(
         navController = navController,
@@ -37,6 +39,7 @@ fun NavManager(viewModel: WalletViewModel) {
     ) {
         composable<ItemsNavScreen.ScreenInit> {
             ScreenInit(
+                indexCard = indexCard,
                 cardId = cardSelected,
                 viewModel = viewModel,
                 drawerState = drawerState,

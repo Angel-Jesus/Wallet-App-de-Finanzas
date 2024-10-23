@@ -5,4 +5,7 @@ enum class ActionProcess {
     SUCCESS,
     NOT_AVAILABLE,
     ERROR,
+    ALL_CARD,
+    DEBT_BY_CARD,
+    UPDATE_DEBT_BY_CARD,
 }

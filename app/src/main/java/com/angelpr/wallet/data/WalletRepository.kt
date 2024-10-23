@@ -94,7 +94,7 @@ class WalletRepository @Inject constructor(
 
     suspend fun updateDebtToDatabase(id: Int, quotasPaid: Int, isPaid: Int): ActionProcess {
         walletDao.updateDebtCard(id = id, quotasPaid = quotasPaid, isPaid = isPaid)
-        return ActionProcess.SUCCESS
+        return ActionProcess.UPDATE_DEBT_BY_CARD
     }
 
     suspend fun deleteDebtToDatabase(id: Int): ActionProcess {
