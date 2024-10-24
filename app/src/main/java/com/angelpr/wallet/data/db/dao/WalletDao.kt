@@ -24,8 +24,8 @@ interface WalletDao {
     @Query("DELETE FROM cardWallet_table WHERE id = :id")
     suspend fun deleteCard(id: Int)
 
-    // Debt Card into the database
-    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :idCard AND isPaid = 0")
+    // Debt into the database
+    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :idCard AND isPaid = 0 ORDER BY id DESC")
     suspend fun getDebtNotPaidCardById(idCard: Int): List<DebtsWalletEntity>
 
     @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :idCard AND isPaid = 1 ORDER BY id DESC LIMIT :limit")

@@ -82,8 +82,6 @@ fun DebtScreen(
 
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { itemsTabScreens.size })
 
-    Log.i("DebtScreen", "card: ${uiCardState.cardList}")
-
     LaunchedEffect(uiDebtState.state) {
 
         Log.i("DebtScreen", "state: ${uiDebtState.state.name}")

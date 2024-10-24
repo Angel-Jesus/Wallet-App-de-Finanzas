@@ -93,6 +93,12 @@ fun ScreenInit(
         viewModel.getAllCard()
     }
 
+    // Check if indexCard is greater than last index update
+    // the value to correct the possible error
+    if(indexCard.intValue > uiCardState.cardList.lastIndex && indexCard.intValue != 0){
+        indexCard.intValue -= 1
+    }
+
     LaunchedEffect(key1 = uiCardState.state, key2 = indexCard.intValue) {
         if (uiCardState.cardList.isNotEmpty()) {
             // Save cardId to use in DebtScreen
@@ -114,7 +120,6 @@ fun ScreenInit(
             showDebtType = false
         }
     }
-
 
     NavigatorDrawer(
         itemSelected = 0,

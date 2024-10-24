@@ -7,6 +7,7 @@ import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.data.model.DebtModel
 import com.angelpr.wallet.domain.DeleteWalletUseCase
 import com.angelpr.wallet.domain.GetWalletUseCase
+import com.angelpr.wallet.domain.ScheduleNotificationUseCase
 import com.angelpr.wallet.domain.SendWalletUseCase
 import com.angelpr.wallet.domain.UpdateWalletUseCase
 import com.angelpr.wallet.presentation.components.model.Type
@@ -23,7 +24,8 @@ class WalletViewModel @Inject constructor(
     private val getWalletUseCase: GetWalletUseCase,
     private val sendWalletUseCase: SendWalletUseCase,
     private val updateWalletUseCase: UpdateWalletUseCase,
-    private val deleteWalletUseCase: DeleteWalletUseCase
+    private val deleteWalletUseCase: DeleteWalletUseCase,
+    private val notificationUseCase: ScheduleNotificationUseCase
 ) : ViewModel() {
 
     private val _stateCard = MutableStateFlow(UiStateCard())
@@ -126,6 +128,22 @@ class WalletViewModel @Inject constructor(
             _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
             _stateDebt.update { it.copy(state = deleteWalletUseCase.AllDebtByCard(idCard)) }
         }
+    }
+
+    // Notification and AlarmManager
+    fun setScheduleNotification(daysToSubtract: Long, date: LocalDate) {
+        val notificationId = date.year*10000 + date.monthValue*100 + date.dayOfMonth
+
+        val dateRecordatory = date.minusDays(daysToSubtract)
+        val year = dateRecordatory.year
+        val month = dateRecordatory.month.value
+        val day = dateRecordatory.dayOfMonth
+
+        notificationUseCase.schedule(notificationId, year, month, day)
+    }
+
+    fun cancelScheduleNotification(notificationId: Int) {
+        notificationUseCase.cancel(notificationId)
     }
 
     // Extra Function
