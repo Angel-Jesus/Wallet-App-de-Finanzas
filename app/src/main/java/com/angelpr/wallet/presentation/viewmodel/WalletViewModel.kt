@@ -28,6 +28,12 @@ class WalletViewModel @Inject constructor(
     private val notificationUseCase: ScheduleNotificationUseCase
 ) : ViewModel() {
 
+    private val _showDialog = MutableStateFlow(false)
+    val showDialog = _showDialog.asStateFlow()
+
+    private val _launchSetting = MutableStateFlow(false)
+    val launchSetting = _launchSetting.asStateFlow()
+
     private val _stateCard = MutableStateFlow(UiStateCard())
     val stateCard = _stateCard.asStateFlow()
 
@@ -40,6 +46,14 @@ class WalletViewModel @Inject constructor(
     private val _totalDebtType = MutableStateFlow(emptyMap<String, Type>())
     val totalDebtType = _totalDebtType.asStateFlow()
 
+    // Permission
+    fun updateShowDialog(show: Boolean) {
+        _showDialog.update { show }
+    }
+
+    fun updateLaunchSetting(launch: Boolean) {
+        _launchSetting.update { launch }
+    }
 
     // Action by Cards
     fun getAllCard() {
@@ -132,7 +146,7 @@ class WalletViewModel @Inject constructor(
 
     // Notification and AlarmManager
     fun setScheduleNotification(daysToSubtract: Long, date: LocalDate) {
-        val notificationId = date.year*10000 + date.monthValue*100 + date.dayOfMonth
+        val notificationId = date.year * 10000 + date.monthValue * 100 + date.dayOfMonth
 
         val dateRecordatory = date.minusDays(daysToSubtract)
         val year = dateRecordatory.year

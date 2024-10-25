@@ -53,6 +53,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.angelpr.wallet.data.model.ActionProcess
 import com.angelpr.wallet.data.model.CardModel
@@ -66,6 +67,7 @@ import com.angelpr.wallet.ui.theme.ContainerColor
 import com.angelpr.wallet.ui.theme.GreenTopBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -140,7 +142,7 @@ fun ScreenInit(
                     .fillMaxSize()
             ) {
                 item {
-                    TitleCards(navController, uiCardState, indexCard.intValue)
+                    TitleCards(viewModel, navController, uiCardState, indexCard.intValue)
                 }
                 item {
                     Card(
@@ -199,6 +201,7 @@ fun ScreenInit(
 
 @Composable
 private fun TitleCards(
+    viewModel: WalletViewModel,
     navController: NavController,
     uiState: WalletViewModel.UiStateCard,
     indexCard: Int
@@ -214,7 +217,6 @@ private fun TitleCards(
                 .padding(start = 8.dp, end = 8.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            //horizontalArrangement = Arrangement.Start
         ) {
             Text(
                 modifier = Modifier
@@ -228,7 +230,9 @@ private fun TitleCards(
                 modifier = Modifier
                     .size(32.dp),
                 onClick = {
-                    navController.navigate(ItemsNavScreen.ScreenAddWallet)
+                    Log.d("receiver", "Se establecio la alarma")
+                    viewModel.setScheduleNotification(5, LocalDate.now())
+                    //navController.navigate(ItemsNavScreen.ScreenAddWallet)
                 },
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, Color.LightGray)
@@ -246,7 +250,11 @@ private fun TitleCards(
                 modifier = Modifier
                     .size(32.dp),
                 onClick = {
+                    val date = LocalDate.now()
+                    val notificationId = date.year*10000 + date.monthValue*100 + date.dayOfMonth
+                    viewModel.cancelScheduleNotification(notificationId)
                     // Pass parameter of card to editScreen
+                    /*
                     if (uiState.cardList.isNotEmpty()) {
                         navController.navigate(
                             ItemsNavScreen.ScreenEditCard(
@@ -260,6 +268,8 @@ private fun TitleCards(
                             )
                         )
                     }
+
+                     */
                 },
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, Color.LightGray)

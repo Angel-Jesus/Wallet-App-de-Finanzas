@@ -3,6 +3,7 @@ package com.angelpr.wallet.di
 import android.content.Context
 import androidx.room.Room
 import com.angelpr.wallet.data.db.WalletDatabase
+import com.angelpr.wallet.data.db.dao.WalletDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,10 +19,10 @@ object RoomModule {
 
     @Singleton
     @Provides
-    fun provideRoom(@ApplicationContext context: Context) =
+    fun provideRoom(@ApplicationContext context: Context): WalletDatabase =
         Room.databaseBuilder(context, WalletDatabase::class.java, DATABASE_NAME).fallbackToDestructiveMigration().build()
 
     @Singleton
     @Provides
-    fun provideCardDai(db: WalletDatabase) = db.getCardDao()
+    fun provideCardDai(db: WalletDatabase): WalletDao = db.getCardDao()
 }

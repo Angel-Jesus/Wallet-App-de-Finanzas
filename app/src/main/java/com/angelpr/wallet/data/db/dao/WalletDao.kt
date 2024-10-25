@@ -46,5 +46,4 @@ interface WalletDao {
     @Query("DELETE FROM debtsWallet_table WHERE idWallet = :idCard")
     suspend fun deleteAllDebtCard(idCard: Int)
 
-
 }

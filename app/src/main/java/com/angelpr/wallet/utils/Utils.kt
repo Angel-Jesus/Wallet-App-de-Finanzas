@@ -7,3 +7,7 @@ fun <T> Iterable<T>.sumOfFloat(selector: (T) -> Float):Float {
     }
     return sum
 }
+
+object Constants{
+    const val MY_CHANNEL_ID = "myChannel"
+}
