@@ -71,7 +71,6 @@ fun WarningDialog(
 
                 Text(
                     text = text,
-                    color = Color.Black,
                     fontSize = 12.sp
                 )
 

@@ -1,10 +1,12 @@
 package com.angelpr.wallet.presentation.viewmodel
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.angelpr.wallet.data.model.ActionProcess
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.data.model.DebtModel
+import com.angelpr.wallet.domain.DataStoreUseCase
 import com.angelpr.wallet.domain.DeleteWalletUseCase
 import com.angelpr.wallet.domain.GetWalletUseCase
 import com.angelpr.wallet.domain.ScheduleNotificationUseCase
@@ -25,8 +27,12 @@ class WalletViewModel @Inject constructor(
     private val sendWalletUseCase: SendWalletUseCase,
     private val updateWalletUseCase: UpdateWalletUseCase,
     private val deleteWalletUseCase: DeleteWalletUseCase,
-    private val notificationUseCase: ScheduleNotificationUseCase
+    private val notificationUseCase: ScheduleNotificationUseCase,
+    private val dataStoreUseCase: DataStoreUseCase
 ) : ViewModel() {
+
+    private val _enableNotification = MutableStateFlow(false)
+    val enableNotification = _enableNotification.asStateFlow()
 
     private val _showDialog = MutableStateFlow(false)
     val showDialog = _showDialog.asStateFlow()
@@ -53,6 +59,21 @@ class WalletViewModel @Inject constructor(
 
     fun updateLaunchSetting(launch: Boolean) {
         _launchSetting.update { launch }
+    }
+
+    // DataStore
+    fun updateEnableNotification(enable: Boolean){
+        viewModelScope.launch {
+            dataStoreUseCase.updateNotification(enable)
+        }
+    }
+
+    fun getEnableNotification(){
+        viewModelScope.launch {
+            dataStoreUseCase.getNotification().collect{enable ->
+                _enableNotification.update { enable }
+            }
+        }
     }
 
     // Action by Cards
@@ -122,7 +143,7 @@ class WalletViewModel @Inject constructor(
         _totalDebtType.update { getWalletUseCase.GetTotalDebtType(debtList) }
     }
 
-    fun updateDebtState(id: Int, quotas: Int, quotasPaid: Int) {
+    fun updateDebtState(id: Int, quotas: Int, quotasPaid: Int, dateExpired: Long) {
         viewModelScope.launch {
             _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
             _stateDebt.update {
@@ -130,7 +151,8 @@ class WalletViewModel @Inject constructor(
                     state = updateWalletUseCase.DebtState(
                         id,
                         quotas,
-                        quotasPaid
+                        quotasPaid,
+                        dateExpired
                     )
                 )
             }
@@ -145,18 +167,27 @@ class WalletViewModel @Inject constructor(
     }
 
     // Notification and AlarmManager
-    fun setScheduleNotification(daysToSubtract: Long, date: LocalDate) {
-        val notificationId = date.year * 10000 + date.monthValue * 100 + date.dayOfMonth
+    fun setScheduleNotification(cardName: String, daysToSubtract: Long, dateExpired: LocalDate) {
+        val notificationId =
+            dateExpired.year * 10000 + dateExpired.monthValue * 100 + dateExpired.dayOfMonth + cardName.hashCode()
 
-        val dateRecordatory = date.minusDays(daysToSubtract)
+        val dateRecordatory = dateExpired.minusDays(daysToSubtract)
         val year = dateRecordatory.year
         val month = dateRecordatory.month.value
         val day = dateRecordatory.dayOfMonth
 
-        notificationUseCase.schedule(notificationId, year, month, day)
+        notificationUseCase.schedule(
+            cardName = cardName,
+            dateExpired = dateExpired,
+            notificationId = notificationId,
+            year = year,
+            month = month,
+            day = day)
     }
 
-    fun cancelScheduleNotification(notificationId: Int) {
+    fun cancelScheduleNotification(cardName: String, dateExpired: LocalDate) {
+        val notificationId =
+            dateExpired.year * 10000 + dateExpired.monthValue * 100 + dateExpired.dayOfMonth + cardName.hashCode()
         notificationUseCase.cancel(notificationId)
     }
 

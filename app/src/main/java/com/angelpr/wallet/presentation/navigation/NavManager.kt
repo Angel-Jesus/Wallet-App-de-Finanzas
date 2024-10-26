@@ -21,7 +21,7 @@ import com.angelpr.wallet.presentation.screen.AddWalletScreen
 import com.angelpr.wallet.presentation.screen.DebtScreen
 import com.angelpr.wallet.presentation.screen.EditCardScreen
 import com.angelpr.wallet.presentation.screen.ScreenInit
-import com.angelpr.wallet.presentation.screen.ScreenStatistics
+import com.angelpr.wallet.presentation.screen.StatisticsScreen
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 
 @SuppressLint("NewApi")
@@ -32,6 +32,10 @@ fun NavManager(viewModel: WalletViewModel) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val cardSelected = rememberSaveable{ mutableIntStateOf(0) }
     val indexCard = rememberSaveable{ mutableIntStateOf(0) }
+
+    LaunchedEffect(Unit) {
+        viewModel.getEnableNotification()
+    }
 
     NavHost(
         navController = navController,
@@ -48,7 +52,8 @@ fun NavManager(viewModel: WalletViewModel) {
         }
 
         composable<ItemsNavScreen.ScreenStatistics> {
-            ScreenStatistics(
+            StatisticsScreen(
+                viewModel = viewModel,
                 drawerState = drawerState,
                 navController = navController
             )

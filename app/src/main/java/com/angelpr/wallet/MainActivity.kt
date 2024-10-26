@@ -4,6 +4,7 @@ import android.Manifest.permission
 import android.animation.ObjectAnimator
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.datastore.preferences.preferencesDataStore
 import com.angelpr.wallet.presentation.navigation.NavManager
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.WalletTheme
@@ -58,32 +60,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Init Splash Screen
-        installSplashScreen().apply {
-            setOnExitAnimationListener { screen ->
-                val zoomX = ObjectAnimator.ofFloat(
-                    screen.iconView,
-                    View.SCALE_X,
-                    0.5f,
-                    0.0f
-                )
-                zoomX.interpolator = OvershootInterpolator()
-                zoomX.duration = 500L
-                zoomX.doOnEnd { screen.remove() }
-
-                val zoomY = ObjectAnimator.ofFloat(
-                    screen.iconView,
-                    View.SCALE_Y,
-                    0.4f,
-                    0.0f
-                )
-                zoomY.interpolator = OvershootInterpolator()
-                zoomY.duration = 1000L
-                zoomY.doOnEnd { screen.remove() }
-
-                zoomX.start()
-                zoomY.start()
-            }
-        }
+        installSplashScreen()
         enableEdgeToEdge()
         createChannel()
         setContent {
@@ -122,7 +99,6 @@ class MainActivity : ComponentActivity() {
                 }
 
                 MaterialTheme {
-
                     NavManager(viewModel)
 
                     if(showDialog){

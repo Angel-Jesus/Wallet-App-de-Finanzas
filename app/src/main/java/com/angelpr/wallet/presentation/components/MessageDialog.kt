@@ -70,7 +70,6 @@ fun MessageDialog(
 
                 Text(
                     text = text,
-                    color = Color.Black,
                     fontSize = 12.sp
                 )
 

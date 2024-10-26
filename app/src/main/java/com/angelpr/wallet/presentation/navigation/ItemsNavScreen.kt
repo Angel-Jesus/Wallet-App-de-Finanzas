@@ -23,8 +23,9 @@ sealed class ItemsNavScreen {
     ): ItemsNavScreen()
     @Serializable
     data object ScreenAddDebt: ItemsNavScreen()
-    /*
+/*
     @Serializable
-    data object ScreenSettings: AppScreens()
-     */
+    data object ScreenSettings: ItemsNavScreen()
+ */
+
 }

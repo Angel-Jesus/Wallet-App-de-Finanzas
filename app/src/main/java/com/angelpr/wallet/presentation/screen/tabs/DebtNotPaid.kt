@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableIntState
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.angelpr.wallet.R
@@ -39,6 +41,7 @@ import com.angelpr.wallet.presentation.components.PieChart
 import com.angelpr.wallet.presentation.components.model.Type
 import com.angelpr.wallet.presentation.components.model.getCategory
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
+import com.angelpr.wallet.ui.theme.NotPaid
 import com.angelpr.wallet.ui.theme.Wallet
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -108,7 +111,6 @@ fun DebtNotPaid(
     }
 }
 
-@SuppressLint("NewApi")
 @Composable
 private fun CardDebtItem(
     onClick: () -> Unit,
@@ -174,8 +176,8 @@ private fun CardDebtItem(
                 )
 
                 Text(
-                    text = debtModel.typeMoney + " " + debtModel.debt.toString(),
-                    color = Color.Gray
+                    text = debtModel.typeMoney + " -" + debtModel.debt.toString(),
+                    color = NotPaid
                 )
             }
 
@@ -210,6 +212,27 @@ private fun CardDebtItem(
             )
         }
 
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CardDebtItemPreview() {
+    MaterialTheme {
+        CardDebtItem(
+            onClick = {},
+            debtModel = DebtModel(
+                idWallet = 1,
+                nameCard = "Bbva Befree",
+                typeMoney = "PEN",
+                debt = 30.0f,
+                type = "Compras",
+                quotas = 0,
+                isPaid = 0,
+                date = LocalDate.now().toEpochDay(),
+                dateExpired = LocalDate.now().toEpochDay()
+            )
+        )
     }
 }
 

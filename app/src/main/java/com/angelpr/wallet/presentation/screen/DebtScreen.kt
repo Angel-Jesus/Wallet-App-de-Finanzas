@@ -34,6 +34,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -58,6 +59,7 @@ import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.GreenTopBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 @Composable
 fun DebtScreen(
@@ -76,9 +78,15 @@ fun DebtScreen(
     var emptyStatePaid by remember { mutableStateOf(true) }
 
     var enableButton by remember { mutableStateOf(false) }
+    var cancelSchedule by remember { mutableStateOf(false) }
+
     var showWarning by remember { mutableStateOf(false) }
     val showPaidQuotaDialog = remember { mutableStateOf(false) }
+
     val indexDebt = remember { mutableIntStateOf(0) }
+    var cardName by remember { mutableStateOf("No Card") }
+    var dateExpired by remember { mutableLongStateOf(0L) }
+
 
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { itemsTabScreens.size })
 
@@ -86,21 +94,25 @@ fun DebtScreen(
 
         Log.i("DebtScreen", "state: ${uiDebtState.state.name}")
 
-        if(uiDebtState.state == ActionProcess.SUCCESS || uiDebtState.state == ActionProcess.UPDATE_DEBT_BY_CARD){
+        if (uiDebtState.state == ActionProcess.SUCCESS || uiDebtState.state == ActionProcess.UPDATE_DEBT_BY_CARD) {
             viewModel.getDebtByCard(idCard = cardId, limit = 20)
         }
-
-        if (uiDebtState.debtNotPaidList.isNotEmpty() && uiDebtState.state == ActionProcess.DEBT_BY_CARD) {
-            emptyStateNotPaid = false
-            viewModel.getDebtByType(uiDebtState.debtNotPaidList)
-        }else{
+        if (uiDebtState.debtNotPaidList.isNotEmpty()) {
+            if(uiDebtState.state == ActionProcess.DEBT_BY_CARD){
+                emptyStateNotPaid = false
+                viewModel.getDebtByType(uiDebtState.debtNotPaidList)
+            }
+        }
+        else {
             emptyStateNotPaid = true
         }
 
-        if (uiDebtState.debtPaidList.isNotEmpty() && uiDebtState.state == ActionProcess.DEBT_BY_CARD) {
-            emptyStatePaid = false
-        }else{
-            emptyStatePaid = true
+        emptyStatePaid = !(uiDebtState.debtPaidList.isNotEmpty() && uiDebtState.state == ActionProcess.DEBT_BY_CARD)
+
+        if(emptyStateNotPaid && cancelSchedule){
+            Log.d("schedule", "cancel Schedule")
+            cancelSchedule = false
+            viewModel.cancelScheduleNotification(cardName, LocalDate.ofEpochDay(dateExpired))
         }
     }
 
@@ -124,9 +136,14 @@ fun DebtScreen(
                 viewModel.updateDebtState(
                     id = uiDebtState.debtNotPaidList[indexDebt.intValue].id,
                     quotas = uiDebtState.debtNotPaidList[indexDebt.intValue].quotas,
-                    quotasPaid = uiDebtState.debtNotPaidList[indexDebt.intValue].quotePaid + 1
+                    quotasPaid = uiDebtState.debtNotPaidList[indexDebt.intValue].quotePaid + 1,
+                    dateExpired = uiDebtState.debtNotPaidList[indexDebt.intValue].dateExpired
                 )
+                cardName = uiDebtState.debtNotPaidList[indexDebt.intValue].nameCard
+                dateExpired = uiDebtState.debtNotPaidList[indexDebt.intValue].dateExpired
+
                 showPaidQuotaDialog.value = false
+                cancelSchedule = true
             },
             title = "Pago de cuota",
             text = "Si la quota es solo una se habrá pagado toda la deuda, en caso contrario, solo se registrará el pago de una quota"
@@ -134,6 +151,7 @@ fun DebtScreen(
     }
 
     NavigatorDrawer(
+        viewModel = viewModel,
         itemSelected = 1,
         navController = navController,
         drawerState = drawerState,
@@ -143,7 +161,13 @@ fun DebtScreen(
             modifier = Modifier
                 .fillMaxSize(),
             topBar = {
-                TopBar(scope, drawerState)
+                TopBar(
+                    onOpenDrawer = {
+                        scope.launch {
+                            drawerState.open()
+                        }
+                    }
+                )
             },
             floatingActionButton = {
                 FloatingActionButton(
@@ -235,24 +259,6 @@ fun Tabs(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun TabsPreview() {
-    MaterialTheme {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Tabs(
-                scope = rememberCoroutineScope(),
-                pagerState = rememberPagerState(
-                    initialPage = 0,
-                    pageCount = { itemsTabScreens.size })
-            )
-        }
-
-    }
-}
-
 @Composable
 fun TabsContent(
     emptyStatePaid: Boolean,
@@ -290,18 +296,13 @@ fun TabsContent(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TopBar(
-    scope: CoroutineScope,
-    drawerState: DrawerState
+    onOpenDrawer: () -> Unit
 ) {
     TopAppBar(
         title = { Text(text = "Deudas") },
         navigationIcon = {
             IconButton(
-                onClick = {
-                    scope.launch {
-                        drawerState.open()
-                    }
-                }
+                onClick = onOpenDrawer
             ) {
                 Icon(
                     imageVector = Icons.Default.Menu,
@@ -317,6 +318,30 @@ private fun TopBar(
             actionIconContentColor = GreenTopBar
         )
     )
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun TabsPreview() {
+    MaterialTheme {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            TopBar(
+                onOpenDrawer = {}
+            )
+            /*
+            Tabs(
+                scope = rememberCoroutineScope(),
+                pagerState = rememberPagerState(
+                    initialPage = 0,
+                    pageCount = { itemsTabScreens.size })
+            )
+             */
+        }
+
+    }
 }
 
 

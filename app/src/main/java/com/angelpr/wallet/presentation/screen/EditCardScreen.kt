@@ -50,6 +50,7 @@ import com.angelpr.wallet.presentation.components.MessageDialog
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.CardWalletList
 import com.angelpr.wallet.ui.theme.GreenTopBar
+import java.time.LocalDate
 
 @Composable
 fun EditCardScreen(
@@ -71,9 +72,13 @@ fun EditCardScreen(
         MessageDialog(
             onDismissRequest = { showMessageDialog = false },
             positiveButton = {
+                val dateToday = LocalDate.now()
+                val dateExpired = viewModel.getDateExpired(cardModel.paidDateExpired, cardModel.dateClose, dateToday)
+
                 showMessageDialog = false
                 viewModel.deleteCard(cardModel.id)
                 viewModel.deleteAllDebt(cardModel.id)
+                viewModel.cancelScheduleNotification(cardModel.nameCard, LocalDate.ofEpochDay(dateExpired))
                 navController.popBackStack()
             },
             title = "Eliminar tarjeta",
@@ -85,11 +90,9 @@ fun EditCardScreen(
     Scaffold(
         topBar = {
             TopBar(
-                navController = navController,
-                deleteData = {
-                    showMessageDialog = true
-                },
-                saveData = {
+                onBack = { navController.popBackStack() },
+                onDeleteData = { showMessageDialog = true },
+                onSaveData = {
                     viewModel.updateCard(
                         CardModel(
                             id = cardModel.id,
@@ -386,15 +389,15 @@ private fun DropDownColors(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TopBar(
-    navController: NavController,
-    deleteData: () -> Unit,
-    saveData: () -> Unit
+    onBack: () -> Unit,
+    onDeleteData: () -> Unit,
+    onSaveData: () -> Unit
 ) {
     TopAppBar(
         title = { Text(text = "Añadir cuenta") },
         navigationIcon = {
             IconButton(
-                onClick = { navController.popBackStack() }
+                onClick = onBack
             ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
@@ -404,7 +407,7 @@ private fun TopBar(
         },
         actions = {
             IconButton(
-                onClick = deleteData
+                onClick = onDeleteData
             ) {
                 Icon(
                     tint = Color.White,
@@ -414,7 +417,7 @@ private fun TopBar(
             }
 
             IconButton(
-                onClick = saveData
+                onClick = onSaveData
             ) {
                 Icon(
                     tint = Color.White,

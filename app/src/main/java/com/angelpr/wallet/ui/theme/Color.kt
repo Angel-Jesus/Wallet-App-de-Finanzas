@@ -10,9 +10,16 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
-val ContainerColor = Color(0xFFF6F6F6)
+val Orange = Color(0xFFD78800)
 
-val GreenTopBar = Color(0xFF008F80)
+val ContainerColor = Color(0xFFF6F6F6)
+val ContainerColorDark = Color(0xFF1B1B1B)
+val ContainerInitDark = Color(0xFF2C2C2C)
+
+val GreenTopBar = Color(0xFF0D1D38)
+
+val NotPaid = Color(0xFFB9333C)
+val Paid = Color(0xFF008F80)
 
 val CardWalletList = listOf(
     Color(0xFF1B7777),
@@ -22,8 +29,6 @@ val CardWalletList = listOf(
     Color(0xFF625b71),
     Color(0xFF7D5260)
 )
-
-val indicator = Color(0xFF008F80)
 
 val Food = Color(0xFFB9333C)
 val Shopping = Color(0xFF05ADAD)

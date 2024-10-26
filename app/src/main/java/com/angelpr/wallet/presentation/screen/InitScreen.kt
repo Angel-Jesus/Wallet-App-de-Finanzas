@@ -4,6 +4,7 @@ import android.icu.text.DecimalFormat
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -64,6 +65,8 @@ import com.angelpr.wallet.presentation.components.model.Categories
 import com.angelpr.wallet.presentation.components.model.Type
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.ContainerColor
+import com.angelpr.wallet.ui.theme.ContainerColorDark
+import com.angelpr.wallet.ui.theme.ContainerInitDark
 import com.angelpr.wallet.ui.theme.GreenTopBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -96,7 +99,7 @@ fun ScreenInit(
     }
 
     // Check if indexCard is greater than last index update
-    // the value to correct the possible error
+    // The value to correct the possible error
     if(indexCard.intValue > uiCardState.cardList.lastIndex && indexCard.intValue != 0){
         indexCard.intValue -= 1
     }
@@ -124,6 +127,7 @@ fun ScreenInit(
     }
 
     NavigatorDrawer(
+        viewModel = viewModel,
         itemSelected = 0,
         navController = navController,
         drawerState = drawerState,
@@ -132,9 +136,15 @@ fun ScreenInit(
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
-                TopBar(scope, drawerState)
+                TopBar(
+                    onDisplayDrawer = {
+                        scope.launch {
+                            drawerState.open()
+                        }
+                    }
+                )
             },
-            containerColor = ContainerColor
+            containerColor = if(isSystemInDarkTheme()) MaterialTheme.colorScheme.background else ContainerColor
         ) { innerPadding ->
             LazyColumn(
                 modifier = Modifier
@@ -142,7 +152,7 @@ fun ScreenInit(
                     .fillMaxSize()
             ) {
                 item {
-                    TitleCards(viewModel, navController, uiCardState, indexCard.intValue)
+                    TitleCards(navController, uiCardState, indexCard.intValue)
                 }
                 item {
                     Card(
@@ -150,7 +160,7 @@ fun ScreenInit(
                             .padding(bottom = 10.dp),
                         shape = RoundedCornerShape(0.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = Color.White
+                            containerColor = if(isSystemInDarkTheme()) ContainerInitDark else Color.White
                         )
                     ) {
                         FlowRow(
@@ -201,7 +211,6 @@ fun ScreenInit(
 
 @Composable
 private fun TitleCards(
-    viewModel: WalletViewModel,
     navController: NavController,
     uiState: WalletViewModel.UiStateCard,
     indexCard: Int
@@ -209,7 +218,7 @@ private fun TitleCards(
     Card(
         shape = RoundedCornerShape(0.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = if(isSystemInDarkTheme()) ContainerInitDark else Color.White
         )
     ) {
         Row(
@@ -223,16 +232,14 @@ private fun TitleCards(
                     .weight(1f)
                     .padding(top = 16.dp, bottom = 16.dp),
                 text = "Lista de cuentas",
-                color = Color.Black
+                //color = Color.Black
             )
 
             OutlinedIconButton(
                 modifier = Modifier
                     .size(32.dp),
                 onClick = {
-                    Log.d("receiver", "Se establecio la alarma")
-                    viewModel.setScheduleNotification(5, LocalDate.now())
-                    //navController.navigate(ItemsNavScreen.ScreenAddWallet)
+                    navController.navigate(ItemsNavScreen.ScreenAddWallet)
                 },
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, Color.LightGray)
@@ -240,7 +247,7 @@ private fun TitleCards(
                 Icon(
                     imageVector = Icons.Filled.Add,
                     contentDescription = "Add Card",
-                    tint = Color.Blue
+                    tint = if(isSystemInDarkTheme()) Color.White else Color.Blue
                 )
             }
 
@@ -250,11 +257,7 @@ private fun TitleCards(
                 modifier = Modifier
                     .size(32.dp),
                 onClick = {
-                    val date = LocalDate.now()
-                    val notificationId = date.year*10000 + date.monthValue*100 + date.dayOfMonth
-                    viewModel.cancelScheduleNotification(notificationId)
                     // Pass parameter of card to editScreen
-                    /*
                     if (uiState.cardList.isNotEmpty()) {
                         navController.navigate(
                             ItemsNavScreen.ScreenEditCard(
@@ -268,8 +271,6 @@ private fun TitleCards(
                             )
                         )
                     }
-
-                     */
                 },
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, Color.LightGray)
@@ -277,7 +278,7 @@ private fun TitleCards(
                 Icon(
                     imageVector = Icons.Filled.Settings,
                     contentDescription = "Add Card",
-                    tint = Color.Blue
+                    tint = if(isSystemInDarkTheme()) Color.White else Color.Blue
                 )
             }
 
@@ -303,14 +304,14 @@ fun CurrentBalanceCard(lineUsedCard: Float, card: CardModel?) {
             defaultElevation = 15.dp
         ),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = if(isSystemInDarkTheme()) ContainerInitDark else Color.White
         )
     ) {
         Text(
             modifier = Modifier
                 .padding(start = 14.dp, top = 8.dp),
             text = "Saldo Actual",
-            color = Color.Black
+            //color = Color.Black
         )
 
         Text(
@@ -319,6 +320,7 @@ fun CurrentBalanceCard(lineUsedCard: Float, card: CardModel?) {
                 .fillMaxWidth()
                 .wrapContentWidth(align = Alignment.CenterHorizontally),
             text = card.nameCard,
+            //color = Color.Black,
             fontSize = 20.sp
         )
 
@@ -330,7 +332,9 @@ fun CurrentBalanceCard(lineUsedCard: Float, card: CardModel?) {
             progress = {
                 percentUsed
             },
-            color = Color(card.colorCard)
+            color = Color(card.colorCard),
+            trackColor = Color.LightGray
+
         )
         Row(
             modifier = Modifier
@@ -341,13 +345,15 @@ fun CurrentBalanceCard(lineUsedCard: Float, card: CardModel?) {
             Text(
                 modifier = Modifier
                     .padding(start = 14.dp),
-                text = card.typeMoney + " " + formatter.format(lineUsedCard)
+                text = card.typeMoney + " " + formatter.format(lineUsedCard),
+                //color = Color.Black
             )
 
             Text(
                 modifier = Modifier
                     .padding(end = 14.dp),
-                text = card.typeMoney + " " + formatter.format(lineAvailable)
+                text = card.typeMoney + " " + formatter.format(lineAvailable),
+                //color = Color.Black
             )
         }
 
@@ -358,7 +364,7 @@ fun CurrentBalanceCard(lineUsedCard: Float, card: CardModel?) {
         ) {
             Text(
                 modifier = Modifier
-                    .padding(start = 14.dp),
+                    .padding(start = 8.dp),
                 text = "Linea utilizada",
                 fontSize = 12.sp,
                 color = Color.Gray
@@ -423,7 +429,7 @@ private fun CardDebtType(data: Map<String, Type>) {
             defaultElevation = 15.dp
         ),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = if(isSystemInDarkTheme()) ContainerInitDark else Color.White
         )
     ) {
         Column(
@@ -432,18 +438,20 @@ private fun CardDebtType(data: Map<String, Type>) {
         ) {
             Text(
                 modifier = Modifier
-                    .padding(start = 8.dp, top = 8.dp, bottom = 28.dp)
+                    .padding(start = 16.dp, top = 8.dp, bottom = 20.dp)
                     .fillMaxWidth()
                     .wrapContentSize(align = Alignment.TopStart),
                 text = "Estructura de deuda",
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                //color = Color.Black
             )
 
             PieChart(
+                //color = Color.Black,
                 data = data
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
         }
     }
@@ -466,8 +474,7 @@ fun PreviewTitleCards() {
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TopBar(
-    scope: CoroutineScope,
-    drawerState: DrawerState
+    onDisplayDrawer: () -> Unit
 ) {
     TopAppBar(
         title = {
@@ -475,11 +482,7 @@ private fun TopBar(
         },
         navigationIcon = {
             IconButton(
-                onClick = {
-                    scope.launch {
-                        drawerState.open()
-                    }
-                }
+                onClick = onDisplayDrawer
             ) {
                 Icon(
                     imageVector = Icons.Default.Menu,

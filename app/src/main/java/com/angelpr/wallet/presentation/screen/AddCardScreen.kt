@@ -64,19 +64,22 @@ fun AddWalletScreen(
 
     Scaffold(
         topBar = {
-            TopBar(navController) {
-                viewModel.addNewCard(
-                    CardModel(
-                        nameCard = nameWallet,
-                        creditLineCard = creditLine,
-                        typeMoney = typeMoney,
-                        paidDateExpired = dayExpiration.toInt(),
-                        dateClose = dateClose.toInt(),
-                        colorCard = colorCard.value
+            TopBar(
+                onBack = { navController.popBackStack() },
+                onSaveData = {
+                    viewModel.addNewCard(
+                        CardModel(
+                            nameCard = nameWallet,
+                            creditLineCard = creditLine,
+                            typeMoney = typeMoney,
+                            paidDateExpired = dayExpiration.toInt(),
+                            dateClose = dateClose.toInt(),
+                            colorCard = colorCard.value
+                        )
                     )
-                )
-                navController.popBackStack()
-            }
+                    navController.popBackStack()
+                }
+            )
         }
     ) { innerPadding ->
         Column(
@@ -99,10 +102,12 @@ fun AddWalletScreen(
                     nameWallet = newValue
                 },
                 singleLine = true,
+                /*
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
                     unfocusedIndicatorColor = Color.LightGray
                 )
+                 */
             )
 
             Text(
@@ -134,10 +139,12 @@ fun AddWalletScreen(
                 },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                /*
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
                     unfocusedIndicatorColor = Color.LightGray
                 )
+                 */
             )
 
             Text(
@@ -156,10 +163,13 @@ fun AddWalletScreen(
                 onValueChange = { newValue ->
                     typeMoney = newValue
                 },
+                /*
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
                     unfocusedIndicatorColor = Color.LightGray
                 )
+
+                 */
             )
 
             Text(
@@ -195,10 +205,13 @@ fun AddWalletScreen(
                 },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                /*
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
                     unfocusedIndicatorColor = Color.LightGray
                 )
+
+                 */
             )
 
             Text(
@@ -234,10 +247,13 @@ fun AddWalletScreen(
                 },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                /*
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
                     unfocusedIndicatorColor = Color.LightGray
                 )
+
+                 */
             )
 
             Text(
@@ -315,10 +331,13 @@ private fun DropDownColors(
                     tint = Color.Black
                 )
             },
+            /*
             colors = TextFieldDefaults.colors(
                 disabledContainerColor = Color.White,
                 disabledIndicatorColor = Color.LightGray
             )
+
+             */
         )
 
         DropdownMenu(
@@ -357,14 +376,14 @@ private fun DropDownColors(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TopBar(
-    navController: NavController,
-    saveData: () -> Unit
+    onBack: () -> Unit,
+    onSaveData: () -> Unit
 ) {
     TopAppBar(
         title = { Text(text = "Añadir cuenta") },
         navigationIcon = {
             IconButton(
-                onClick = { navController.popBackStack() }
+                onClick = onBack
             ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
@@ -374,7 +393,7 @@ private fun TopBar(
         },
         actions = {
             IconButton(
-                onClick = saveData
+                onClick = onSaveData
             ) {
                 Icon(
                     tint = Color.White,

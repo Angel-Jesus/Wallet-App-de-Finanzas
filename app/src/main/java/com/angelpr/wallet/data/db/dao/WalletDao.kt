@@ -37,8 +37,8 @@ interface WalletDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDebtCard(debtCard: DebtsWalletEntity)
 
-    @Query("UPDATE debtsWallet_table SET isPaid = :isPaid, quotePaid = :quotasPaid WHERE id = :id")
-    suspend fun updateDebtCard(id: Int, quotasPaid: Int, isPaid: Int)
+    @Query("UPDATE debtsWallet_table SET isPaid = :isPaid, quotePaid = :quotasPaid, dateExpired = :dateExpired WHERE id = :id")
+    suspend fun updateDebtCard(id: Int, quotasPaid: Int, isPaid: Int, dateExpired: Long)
 
     @Query("DELETE FROM debtsWallet_table WHERE id = :id")
     suspend fun deleteDebtCard(id: Int)

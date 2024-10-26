@@ -10,4 +10,11 @@ fun <T> Iterable<T>.sumOfFloat(selector: (T) -> Float):Float {
 
 object Constants{
     const val MY_CHANNEL_ID = "myChannel"
+    const val NOTIFICATION_KEY = "notificacion"
+
+    const val HOME = "Home"
+    const val DEBT = "Deudas"
+    const val STATISTICS = "Estadistica"
+    const val SETTINGS = "Configuracion"
+
 }

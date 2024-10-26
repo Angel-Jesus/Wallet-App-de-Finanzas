@@ -1,6 +1,7 @@
 package com.angelpr.wallet.presentation.screen
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -73,6 +74,8 @@ fun AddDebtScreen(
         viewModel.getAllCard()
     }
 
+    val enableNotifications by viewModel.enableNotification.collectAsState()
+
     var nameCard by remember { mutableStateOf(uiCardState.cardList[0].nameCard) }
     var typeMoney by remember { mutableStateOf(uiCardState.cardList[0].typeMoney) }
     var idWallet by remember { mutableIntStateOf(uiCardState.cardList[0].id) }
@@ -85,28 +88,45 @@ fun AddDebtScreen(
 
     Scaffold(
         topBar = {
-            TopBar(navController) {
-                // Add debt
-                val date = LocalDate.now()
-                viewModel.addDebt(
-                    DebtModel(
-                        idWallet = idWallet,
-                        nameCard = nameCard,
-                        typeMoney = typeMoney,
-                        debt = cost.toFloat(),
-                        type = category,
-                        isPaid = 0,
-                        quotas = quotas.toInt(),
-                        date = date.toEpochDay(),
-                        dateExpired = viewModel.getDateExpired(
-                            dayExpired = dayExpired,
-                            dateClose = dayClose,
-                            dateToday = date
-                        ),
+            TopBar(
+                onBack = { navController.popBackStack() },
+                onSaveData = {
+                    // Add debt
+                    val date = LocalDate.now()
+                    val dateExpired = viewModel.getDateExpired(
+                        dayExpired = dayExpired,
+                        dateClose = dayClose,
+                        dateToday = date
                     )
-                )
-                navController.popBackStack()
-            }
+
+                    viewModel.addDebt(
+                        DebtModel(
+                            idWallet = idWallet,
+                            nameCard = nameCard,
+                            typeMoney = typeMoney,
+                            debt = cost.toFloat(),
+                            type = category,
+                            isPaid = 0,
+                            quotas = quotas.toInt(),
+                            date = date.toEpochDay(),
+                            dateExpired = dateExpired,
+                        )
+                    )
+
+                    // Add schedule Notification
+                    // Add conditional to enable or disable option to schedule notification
+                    // It's depende on the state of the switch button
+                    // In case there are notification with the same id, the notification will be updated
+                    if (enableNotifications) {
+                        viewModel.setScheduleNotification(
+                            cardName = nameCard,
+                            daysToSubtract = 7,
+                            dateExpired = LocalDate.ofEpochDay(dateExpired)
+                        )
+                    }
+                    navController.popBackStack()
+                }
+            )
         }
     ) { innerPadding ->
         Column(
@@ -466,14 +486,14 @@ private fun DropDownCard(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TopBar(
-    navController: NavController,
-    saveData: () -> Unit
+    onBack: () -> Unit,
+    onSaveData: () -> Unit
 ) {
     TopAppBar(
         title = { Text(text = "Añadir deuda") },
         navigationIcon = {
             IconButton(
-                onClick = { navController.popBackStack() }
+                onClick = { onBack() }
             ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
@@ -483,7 +503,7 @@ private fun TopBar(
         },
         actions = {
             IconButton(
-                onClick = saveData
+                onClick = onSaveData
             ) {
                 Icon(
                     tint = Color.White,

@@ -9,6 +9,7 @@ import com.angelpr.wallet.ui.theme.Shopping
 import com.angelpr.wallet.ui.theme.Transportation
 
 object Categories {
+
     val Debt = listOf(
         Type(
             name = "Comida y Bebida",

@@ -18,20 +18,24 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.angelpr.wallet.presentation.components.NavigatorDrawer
+import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.GreenTopBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
-fun ScreenStatistics(
+fun StatisticsScreen(
+    viewModel: WalletViewModel,
     drawerState: DrawerState,
     navController: NavController) {
 
     val scope = rememberCoroutineScope()
 
     NavigatorDrawer(
+        viewModel = viewModel,
         itemSelected = 2,
         navController = navController,
         drawerState = drawerState,
@@ -40,7 +44,13 @@ fun ScreenStatistics(
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
-                TopBar(scope, drawerState)
+                TopBar(
+                    onDisplayDrawer = {
+                        scope.launch {
+                            drawerState.open()
+                        }
+                    }
+                )
             },
         ) { innerPadding ->
             LazyColumn(
@@ -60,18 +70,13 @@ fun ScreenStatistics(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TopBar(
-    scope: CoroutineScope,
-    drawerState: DrawerState
+    onDisplayDrawer: () -> Unit,
 ) {
     TopAppBar(
         title = { Text(text = "Estadistica") },
         navigationIcon = {
             IconButton(
-                onClick = {
-                    scope.launch {
-                        drawerState.open()
-                    }
-                }
+                onClick = onDisplayDrawer
             ) {
                 Icon(
                     imageVector = Icons.Default.Menu,

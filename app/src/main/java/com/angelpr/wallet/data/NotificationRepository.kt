@@ -7,6 +7,7 @@ import android.content.Intent
 import android.util.Log
 import com.angelpr.wallet.data.receiver.AlarmReceiver
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.LocalDate
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -15,16 +16,20 @@ class NotificationRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
 
-    fun schedule(notificationId: Int, year: Int, month: Int, day: Int){
+    fun schedule(
+        cardName: String,
+        dateExpired: LocalDate,
+        notificationId: Int,
+        year: Int,
+        month: Int,
+        day: Int){
 
-        val datePaid = notificationId.toString()
-        val yearPaid = datePaid.substring(0, 4)
-        val monthPaid = datePaid.substring(4, 6)
-        val dayPaid = datePaid.substring(6, 8)
+        val dateExpiredDebt = "${dateExpired.dayOfMonth}/${ dateExpired.monthValue }/${dateExpired.year}"
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
+            putExtra("cardName", cardName)
             putExtra("notificationId", notificationId)
-            putExtra("datePaid", "$dayPaid/$monthPaid/$yearPaid")
+            putExtra("datePaid", dateExpiredDebt)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -40,11 +45,11 @@ class NotificationRepository @Inject constructor(
             set(Calendar.DAY_OF_MONTH, day)
             set(Calendar.HOUR_OF_DAY, 12)
             set(Calendar.MINUTE, 0)
-        }
+        }.timeInMillis
 
         alarmManager.set(
             AlarmManager.RTC_WAKEUP,
-            Calendar.getInstance().timeInMillis + 8000,
+            reminderTime, //Calendar.getInstance().timeInMillis + 15000
             pendingIntent
         )
     }
@@ -58,7 +63,6 @@ class NotificationRepository @Inject constructor(
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         )
-        Log.d("receiver", "cancelado id: $notificationId")
     }
 
 }

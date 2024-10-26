@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextAlign
@@ -47,6 +48,7 @@ import com.angelpr.wallet.utils.sumOfFloat
 @SuppressLint("DefaultLocale")
 @Composable
 fun PieChart(
+    color: Color = Color.Unspecified,
     data: Map<String, Type>,
     radiusOuter: Dp = 80.dp,
     chartBarWidth: Dp = 35.dp,
@@ -101,14 +103,22 @@ fun PieChart(
 
         // Pie Chart using Canvas Arc
         Box(
-            modifier = Modifier.size(animateSize.dp),
+            modifier = Modifier
+                .padding(bottom = 28.dp, top = 16.dp)
+                .size(animateSize.dp),
             contentAlignment = Alignment.Center
         ) {
 
             Text(
-                text = "Deuda Total:\n${data.values.first().typeMoney} ${String.format("%.2f",totalSum)}",
+                text = "Deuda Total:\n${data.values.first().typeMoney} ${
+                    String.format(
+                        "%.2f",
+                        totalSum
+                    )
+                }",
                 textAlign = TextAlign.Center,
-                fontSize = 16.sp
+                fontSize = 16.sp,
+                color = color
             )
 
             Canvas(
@@ -118,7 +128,7 @@ fun PieChart(
                     .rotate(animateRotation)
             ) {
                 // draw each Arc for each data entry in Pie Chart
-                data.values.forEachIndexed{ index, type ->
+                data.values.forEachIndexed { index, type ->
                     drawArc(
                         color = type.color,
                         lastValue,
@@ -133,7 +143,8 @@ fun PieChart(
         // To see the data in more structured way
         // Compose Function in which Items are showing data
         DetailsPieChart(
-            data
+            color = color,
+            data = data
         )
 
     }
@@ -141,25 +152,35 @@ fun PieChart(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DetailsPieChart(data: Map<String, Type>) {
+private fun DetailsPieChart(
+    color: Color = Color.Unspecified,
+    data: Map<String, Type>
+) {
     FlowRow(
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.Center,
         verticalArrangement = Arrangement.spacedBy(6.dp),
         maxItemsInEachRow = 4
-    ){
-        data.forEach{ (key, type) ->
-            DetailPieChartItem(key, type)
+    ) {
+        data.forEach { (key, type) ->
+            DetailPieChartItem(
+                color = color,
+                key = key,
+                type = type
+            )
         }
     }
 }
 
 @Composable
-private fun DetailPieChartItem(key:String, type: Type){
+private fun DetailPieChartItem(
+    color: Color = Color.Unspecified,
+    key: String,
+    type: Type
+) {
     Row(
         modifier = Modifier
-            .padding(top = 28.dp)
             .wrapContentHeight(align = Alignment.CenterVertically)
-    ){
+    ) {
         Canvas(
             modifier = Modifier
                 .size(24.dp)
@@ -171,7 +192,8 @@ private fun DetailPieChartItem(key:String, type: Type){
         }
         Text(
             text = key,
-            fontSize = 12.sp
+            fontSize = 12.sp,
+            color = color
         )
     }
 }
@@ -179,13 +201,15 @@ private fun DetailPieChartItem(key:String, type: Type){
 @Preview(showBackground = true)
 @Composable
 fun PieChartPreview() {
-    MaterialTheme{
-        Column{
+    MaterialTheme {
+        Column {
             PieChart(
                 data = mapOf(
                     "Compras" to Categories.Debt[0].copy(value = 30.02f),
                     "Mercado" to Categories.Debt[1].copy(value = 20.02f),
-                    "Transporte" to Categories.Debt[2].copy(value = 10.02f)
+                    "Transporte" to Categories.Debt[2].copy(value = 10.02f),
+                    "Transporte2" to Categories.Debt[2].copy(value = 10.02f),
+                    "Transporte3" to Categories.Debt[2].copy(value = 10.02f)
                 )
             )
         }
