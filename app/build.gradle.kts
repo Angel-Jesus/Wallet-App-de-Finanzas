@@ -60,6 +60,11 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    // test mockk
+    testImplementation(libs.io.mockk)
+    // test coroutines
+    implementation(libs.kotlinx.coroutines.android)
+    testImplementation(libs.kotlinx.coroutines.test)
     // Navigation Library
     implementation(libs.navigation.compose)
     implementation(libs.kotlinx.serialization.json)

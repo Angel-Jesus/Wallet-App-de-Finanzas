@@ -137,7 +137,7 @@ fun DebtScreen(
                     id = uiDebtState.debtNotPaidList[indexDebt.intValue].id,
                     quotas = uiDebtState.debtNotPaidList[indexDebt.intValue].quotas,
                     quotasPaid = uiDebtState.debtNotPaidList[indexDebt.intValue].quotePaid + 1,
-                    dateExpired = uiDebtState.debtNotPaidList[indexDebt.intValue].dateExpired
+                    date = uiDebtState.debtNotPaidList[indexDebt.intValue].dateExpired
                 )
                 cardName = uiDebtState.debtNotPaidList[indexDebt.intValue].nameCard
                 dateExpired = uiDebtState.debtNotPaidList[indexDebt.intValue].dateExpired

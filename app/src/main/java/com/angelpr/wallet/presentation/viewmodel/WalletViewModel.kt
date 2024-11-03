@@ -143,7 +143,7 @@ class WalletViewModel @Inject constructor(
         _totalDebtType.update { getWalletUseCase.GetTotalDebtType(debtList) }
     }
 
-    fun updateDebtState(id: Int, quotas: Int, quotasPaid: Int, dateExpired: Long) {
+    fun updateDebtState(id: Int, quotas: Int, quotasPaid: Int, date: Long) {
         viewModelScope.launch {
             _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
             _stateDebt.update {
@@ -152,7 +152,7 @@ class WalletViewModel @Inject constructor(
                         id,
                         quotas,
                         quotasPaid,
-                        dateExpired
+                        date
                     )
                 )
             }

@@ -12,7 +12,9 @@ import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.data.model.DebtModel
 import com.angelpr.wallet.presentation.components.model.Categories
 import com.angelpr.wallet.presentation.components.model.Type
+import com.angelpr.wallet.utils.getMonthInCase
 import com.angelpr.wallet.utils.sumOfFloat
+import java.time.LocalDate
 import javax.inject.Inject
 
 class WalletRepository @Inject constructor(
@@ -92,8 +94,11 @@ class WalletRepository @Inject constructor(
         return ActionProcess.SUCCESS
     }
 
-    suspend fun updateDebtToDatabase(id: Int, quotasPaid: Int, isPaid: Int, dateExpired: Long): ActionProcess {
-        walletDao.updateDebtCard(id = id, quotasPaid = quotasPaid, isPaid = isPaid, dateExpired = dateExpired)
+    suspend fun updateDebtToDatabase(id: Int, quotas: Int, quotasPaid: Int, dateExpired: Long): ActionProcess {
+        val isPaid = if (quotasPaid == quotas) 1 else 0
+        val date = getMonthInCase(dateExpired, quotas == quotasPaid)
+
+        walletDao.updateDebtCard(id = id, quotasPaid = quotasPaid, isPaid = isPaid, dateExpired = date)
         return ActionProcess.UPDATE_DEBT_BY_CARD
     }
 
