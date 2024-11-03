@@ -1,11 +1,10 @@
-package com.angelpr.wallet.domain
+package com.angelpr.wallet.domain.use_case
 
-import com.angelpr.wallet.data.NotificationRepository
+import com.angelpr.wallet.domain.repository.NotificacionRepository
 import java.time.LocalDate
-import javax.inject.Inject
 
-class ScheduleNotificationUseCase @Inject constructor(
-    private val repository: NotificationRepository
+class NotificationUseCase(
+    private val repository: NotificacionRepository
 ) {
     fun schedule(cardName: String, dateExpired: LocalDate, notificationId: Int, year: Int, month: Int, day: Int) =
         repository.schedule(

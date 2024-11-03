@@ -1,11 +1,11 @@
 package com.angelpr.wallet.presentation.viewmodel
 
-import com.angelpr.wallet.domain.DataStoreUseCase
-import com.angelpr.wallet.domain.DeleteWalletUseCase
-import com.angelpr.wallet.domain.GetWalletUseCase
-import com.angelpr.wallet.domain.ScheduleNotificationUseCase
-import com.angelpr.wallet.domain.SendWalletUseCase
-import com.angelpr.wallet.domain.UpdateWalletUseCase
+import com.angelpr.wallet.domain.use_case.DataStoreUseCase
+import com.angelpr.wallet.domain.use_case.wallet.DeleteWalletUseCase
+import com.angelpr.wallet.domain.use_case.wallet.GetWalletUseCase
+import com.angelpr.wallet.domain.use_case.NotificationUseCase
+import com.angelpr.wallet.domain.use_case.wallet.AddWalletUseCase
+import com.angelpr.wallet.domain.use_case.wallet.UpdateWalletUseCase
 import io.mockk.MockKAnnotations
 import io.mockk.impl.annotations.RelaxedMockK
 import kotlinx.coroutines.Dispatchers
@@ -14,7 +14,6 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
-import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class WalletViewModelTest{
@@ -22,13 +21,13 @@ class WalletViewModelTest{
     @RelaxedMockK
     private lateinit var getWalletUseCase: GetWalletUseCase
     @RelaxedMockK
-    private lateinit var sendWalletUseCase: SendWalletUseCase
+    private lateinit var addWalletUseCase: AddWalletUseCase
     @RelaxedMockK
     private lateinit var updateWalletUseCase: UpdateWalletUseCase
     @RelaxedMockK
     private lateinit var deleteWalletUseCase: DeleteWalletUseCase
     @RelaxedMockK
-    private lateinit var notificationUseCase: ScheduleNotificationUseCase
+    private lateinit var notificationUseCase: NotificationUseCase
     @RelaxedMockK
     private lateinit var dataStoreUseCase: DataStoreUseCase
 
@@ -40,7 +39,7 @@ class WalletViewModelTest{
         MockKAnnotations.init(this)
         viewModel = WalletViewModel(
             getWalletUseCase,
-            sendWalletUseCase,
+            addWalletUseCase,
             updateWalletUseCase,
             deleteWalletUseCase,
             notificationUseCase,

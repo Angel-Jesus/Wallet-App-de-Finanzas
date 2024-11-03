@@ -1,17 +1,13 @@
 package com.angelpr.wallet.presentation.viewmodel
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.angelpr.wallet.data.model.ActionProcess
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.data.model.DebtModel
-import com.angelpr.wallet.domain.DataStoreUseCase
-import com.angelpr.wallet.domain.DeleteWalletUseCase
-import com.angelpr.wallet.domain.GetWalletUseCase
-import com.angelpr.wallet.domain.ScheduleNotificationUseCase
-import com.angelpr.wallet.domain.SendWalletUseCase
-import com.angelpr.wallet.domain.UpdateWalletUseCase
+import com.angelpr.wallet.domain.use_case.DataStoreUseCase
+import com.angelpr.wallet.domain.use_case.NotificationUseCase
+import com.angelpr.wallet.domain.use_case.wallet.WalletUseCases
 import com.angelpr.wallet.presentation.components.model.Type
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,11 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
-    private val getWalletUseCase: GetWalletUseCase,
-    private val sendWalletUseCase: SendWalletUseCase,
-    private val updateWalletUseCase: UpdateWalletUseCase,
-    private val deleteWalletUseCase: DeleteWalletUseCase,
-    private val notificationUseCase: ScheduleNotificationUseCase,
+    private val walletUseCases: WalletUseCases,
+    private val notificationUseCase: NotificationUseCase,
     private val dataStoreUseCase: DataStoreUseCase
 ) : ViewModel() {
 
@@ -80,29 +73,38 @@ class WalletViewModel @Inject constructor(
     fun getAllCard() {
         viewModelScope.launch {
             _stateCard.update { it.copy(state = ActionProcess.LOADING) }
-            val result = getWalletUseCase.AllCard()
+            val result = walletUseCases.getWallet.allCard()
             _stateCard.update { it.copy(state = ActionProcess.ALL_CARD, cardList = result) }
         }
     }
 
     fun addNewCard(cardModel: CardModel) {
         viewModelScope.launch {
+            walletUseCases.addWallet.card(cardModel)
+
+            // Revisar esto
             _stateCard.update { it.copy(state = ActionProcess.LOADING) }
-            _stateCard.update { it.copy(state = sendWalletUseCase.Card(cardModel)) }
+            _stateCard.update { it.copy(state = ActionProcess.SUCCESS) }
         }
     }
 
     fun updateCard(cardModel: CardModel) {
         viewModelScope.launch {
+            walletUseCases.updateWallet.card(cardModel)
+
+            // Revisar
             _stateCard.update { it.copy(state = ActionProcess.LOADING) }
-            _stateCard.update { it.copy(state = updateWalletUseCase.Card(cardModel)) }
+            _stateCard.update { it.copy(state = ActionProcess.SUCCESS) }
         }
     }
 
     fun deleteCard(id: Int) {
         viewModelScope.launch {
+            walletUseCases.deleteWallet.card(id)
+
+            // Revisar
             _stateCard.update { it.copy(state = ActionProcess.LOADING) }
-            _stateCard.update { it.copy(state = deleteWalletUseCase.Card(id)) }
+            _stateCard.update { it.copy(state = ActionProcess.SUCCESS) }
         }
     }
 
@@ -114,41 +116,50 @@ class WalletViewModel @Inject constructor(
             val initDate = init.toEpochDay()
             val endDate = end.toEpochDay()
 
-            _totalDebtCard.update { getWalletUseCase.GetLineUseCard(id, initDate, endDate) }
+            _totalDebtCard.update { walletUseCases.getWallet.getLineUseCard(id, initDate, endDate) }
         }
     }
 
     // Action by Debts
     fun addDebt(debt: DebtModel) {
         viewModelScope.launch {
+            walletUseCases.addWallet.debt(debt)
+
+            // Revisar
             _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
-            _stateDebt.update { it.copy(state = sendWalletUseCase.Debt(debt)) }
+            _stateDebt.update { it.copy(state = ActionProcess.SUCCESS) }
         }
     }
 
     fun getDebtByCard(idCard: Int, limit: Int = 20) {
         viewModelScope.launch {
-            _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
+
             _stateDebt.update {
                 it.copy(
                     state = ActionProcess.DEBT_BY_CARD,
-                    debtNotPaidList = getWalletUseCase.GetDebtNotPaidCard(idCard),
-                    debtPaidList = getWalletUseCase.GetDebtPaidCard(idCard, limit)
+                    debtNotPaidList = walletUseCases.getWallet.getDebtNotPaidCard(idCard),
+                    debtPaidList = walletUseCases.getWallet.getDebtPaidCard(idCard, limit)
                 )
             }
+
+            // Revisar
+            _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
         }
     }
 
     fun getDebtByType(debtList: List<DebtModel>) {
-        _totalDebtType.update { getWalletUseCase.GetTotalDebtType(debtList) }
+        _totalDebtType.update { walletUseCases.getWallet.getTotalDebtType(debtList) }
     }
 
-    fun updateDebtState(id: Int, quotas: Int, quotasPaid: Int, date: Long) {
+    fun updateDebtState(debt: DebtModel, id: Int, quotas: Int, quotasPaid: Int, date: Long) {
         viewModelScope.launch {
-            _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
+
+            walletUseCases.updateWallet.debtState(debt)
+            // Revisar
+            /*
             _stateDebt.update {
                 it.copy(
-                    state = updateWalletUseCase.DebtState(
+                    state = walletUseCases.updateWallet.DebtState(
                         id,
                         quotas,
                         quotasPaid,
@@ -156,13 +167,20 @@ class WalletViewModel @Inject constructor(
                     )
                 )
             }
+
+             */
+
+            _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
         }
     }
 
     fun deleteAllDebt(idCard: Int) {
         viewModelScope.launch {
+            walletUseCases.deleteWallet.allDebtByCard(idCard)
+
+            // Revisar
             _stateDebt.update { it.copy(state = ActionProcess.LOADING) }
-            _stateDebt.update { it.copy(state = deleteWalletUseCase.AllDebtByCard(idCard)) }
+            _stateDebt.update { it.copy(state = ActionProcess.SUCCESS) }
         }
     }
 
@@ -203,6 +221,8 @@ class WalletViewModel @Inject constructor(
 
         return date.toEpochDay()
     }
+
+    // DataClass of State
 
     data class UiStateCard(
         val cardList: List<CardModel> = emptyList(),

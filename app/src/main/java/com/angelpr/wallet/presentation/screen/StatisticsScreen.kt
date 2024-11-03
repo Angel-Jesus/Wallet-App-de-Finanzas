@@ -18,6 +18,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.angelpr.wallet.presentation.components.NavigatorDrawer
@@ -28,7 +29,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun StatisticsScreen(
-    viewModel: WalletViewModel,
+    viewModel: WalletViewModel = hiltViewModel(),
     drawerState: DrawerState,
     navController: NavController) {
 

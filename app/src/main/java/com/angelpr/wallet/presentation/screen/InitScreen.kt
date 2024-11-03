@@ -54,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.angelpr.wallet.data.model.ActionProcess
@@ -77,7 +78,7 @@ import java.time.LocalDate
 fun ScreenInit(
     indexCard: MutableIntState,
     cardId: MutableIntState,
-    viewModel: WalletViewModel,
+    viewModel: WalletViewModel = hiltViewModel(),
     drawerState: DrawerState,
     navController: NavController
 ) {

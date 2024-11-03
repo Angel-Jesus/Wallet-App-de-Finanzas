@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
@@ -52,7 +53,7 @@ import com.angelpr.wallet.ui.theme.GreenTopBar
 
 @Composable
 fun AddWalletScreen(
-    viewModel: WalletViewModel,
+    viewModel: WalletViewModel = hiltViewModel(),
     navController: NavController
 ) {
     var nameWallet by remember { mutableStateOf("") }

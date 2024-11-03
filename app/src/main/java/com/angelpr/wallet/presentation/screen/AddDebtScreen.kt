@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.angelpr.wallet.R
 import com.angelpr.wallet.data.model.CardModel
@@ -63,7 +64,7 @@ import java.time.LocalDate
 @SuppressLint("NewApi")
 @Composable
 fun AddDebtScreen(
-    viewModel: WalletViewModel,
+    viewModel: WalletViewModel = hiltViewModel(),
     navController: NavController
 ) {
     val scope = rememberCoroutineScope()

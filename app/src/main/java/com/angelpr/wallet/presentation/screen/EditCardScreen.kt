@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.presentation.components.MessageDialog
@@ -54,7 +55,7 @@ import java.time.LocalDate
 
 @Composable
 fun EditCardScreen(
-    viewModel: WalletViewModel,
+    viewModel: WalletViewModel = hiltViewModel(),
     cardModel: CardModel,
     navController: NavController
 ) {

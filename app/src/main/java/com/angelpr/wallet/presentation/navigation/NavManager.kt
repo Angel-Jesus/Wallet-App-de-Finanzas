@@ -45,7 +45,6 @@ fun NavManager(viewModel: WalletViewModel) {
             ScreenInit(
                 indexCard = indexCard,
                 cardId = cardSelected,
-                viewModel = viewModel,
                 drawerState = drawerState,
                 navController = navController
             )
@@ -53,7 +52,6 @@ fun NavManager(viewModel: WalletViewModel) {
 
         composable<ItemsNavScreen.ScreenStatistics> {
             StatisticsScreen(
-                viewModel = viewModel,
                 drawerState = drawerState,
                 navController = navController
             )
@@ -61,7 +59,6 @@ fun NavManager(viewModel: WalletViewModel) {
 
         composable<ItemsNavScreen.ScreenAddWallet> {
             AddWalletScreen(
-                viewModel = viewModel,
                 navController = navController
             )
         }
@@ -69,7 +66,6 @@ fun NavManager(viewModel: WalletViewModel) {
         composable<ItemsNavScreen.ScreenDebts>{
             DebtScreen(
                 cardId = cardSelected.intValue,
-                viewModel = viewModel,
                 drawerState = drawerState,
                 navController = navController
             )
@@ -96,7 +92,6 @@ fun NavManager(viewModel: WalletViewModel) {
             }
         ){
             AddDebtScreen(
-                viewModel = viewModel,
                 navController = navController
             )
         }
@@ -115,7 +110,6 @@ fun NavManager(viewModel: WalletViewModel) {
             )
 
             EditCardScreen(
-                viewModel = viewModel,
                 cardModel = card,
                 navController = navController,
             )

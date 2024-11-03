@@ -1,29 +1,27 @@
-package com.angelpr.wallet.data
+package com.angelpr.wallet.data.repository
 
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import com.angelpr.wallet.data.receiver.AlarmReceiver
-import dagger.hilt.android.qualifiers.ApplicationContext
+import com.angelpr.wallet.domain.repository.NotificacionRepository
 import java.time.LocalDate
 import java.util.Calendar
-import javax.inject.Inject
 
-class NotificationRepository @Inject constructor(
+class NotificationRepositoryImpl(
     private val alarmManager: AlarmManager,
-    @ApplicationContext private val context: Context
-) {
+    private val context: Context
+): NotificacionRepository {
 
-    fun schedule(
+    override fun schedule(
         cardName: String,
         dateExpired: LocalDate,
         notificationId: Int,
         year: Int,
         month: Int,
-        day: Int){
-
+        day: Int
+    ) {
         val dateExpiredDebt = "${dateExpired.dayOfMonth}/${ dateExpired.monthValue }/${dateExpired.year}"
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
@@ -49,12 +47,12 @@ class NotificationRepository @Inject constructor(
 
         alarmManager.set(
             AlarmManager.RTC_WAKEUP,
-            reminderTime, //Calendar.getInstance().timeInMillis + 15000
+            Calendar.getInstance().timeInMillis + 15000, //Calendar.getInstance().timeInMillis + 15000
             pendingIntent
         )
     }
 
-    fun cancel(notificationId: Int){
+    override fun cancel(notificationId: Int) {
         alarmManager.cancel(
             PendingIntent.getBroadcast(
                 context,
@@ -64,5 +62,4 @@ class NotificationRepository @Inject constructor(
             )
         )
     }
-
 }
