@@ -1,11 +1,9 @@
 package com.angelpr.wallet.presentation.screen.tabs
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,16 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,7 +32,6 @@ import com.angelpr.wallet.R
 import com.angelpr.wallet.data.model.DebtModel
 import com.angelpr.wallet.presentation.components.EmptyStateScreen
 import com.angelpr.wallet.presentation.components.PieChart
-import com.angelpr.wallet.presentation.components.model.Type
 import com.angelpr.wallet.presentation.components.model.getCategory
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.NotPaid
@@ -48,24 +41,22 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun DebtNotPaid(
-    emptyStateNotPaid: Boolean,
-    debtTypeList: Map<String, Type>,
     uiDebtState: WalletViewModel.UiStateDebt,
-    showPaidQuoteDialog: MutableState<Boolean>,
-    indexDebt: MutableIntState
+    onClick: (DebtModel) -> Unit
 ){
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .wrapContentSize(
-                align = if (emptyStateNotPaid) {
+                align = if (uiDebtState.debtNotPaidList.isEmpty()) {
                     Alignment.Center
                 } else {
                     Alignment.TopStart
                 }
             )
     ) {
-        if (emptyStateNotPaid) {
+        if (uiDebtState.debtNotPaidList.isEmpty()) {
             item {
                 EmptyStateScreen(
                     title = "Nada registrado",
@@ -82,7 +73,7 @@ fun DebtNotPaid(
                 ) {
                     Spacer(modifier = Modifier.height(12.dp))
                     PieChart(
-                        data = debtTypeList,
+                        data = uiDebtState.totalDebtByType,
                         chartBarWidth = 30.dp
                     )
                 }
@@ -98,12 +89,9 @@ fun DebtNotPaid(
                 )
             }
 
-            itemsIndexed(uiDebtState.debtNotPaidList) { index, debtModel ->
+            items(uiDebtState.debtNotPaidList) {debtModel ->
                 CardDebtItem(
-                    onClick = {
-                        showPaidQuoteDialog.value = true
-                        indexDebt.intValue = index
-                    },
+                    onClick = { onClick(debtModel) },
                     debtModel = debtModel
                 )
             }

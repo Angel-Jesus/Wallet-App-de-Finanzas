@@ -1,6 +1,7 @@
 package com.angelpr.wallet.domain.repository
 
 import com.angelpr.wallet.data.db.entities.CardWalletEntity
+import com.angelpr.wallet.data.db.entities.DebtsWalletEntity
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.data.model.DebtModel
 import com.angelpr.wallet.presentation.components.model.Type
@@ -21,6 +22,8 @@ interface WalletRepository {
 
     suspend fun getLineUseRoom(idCard: Int, dateInit: Long, dateEnd: Long): Float
 
+    fun getDebtByCardRoom(idCard: Int): Flow<List<DebtsWalletEntity>>
+
     suspend fun getDebtNotPaidTRoom(idCard: Int): List<DebtModel>
 
     suspend fun getDebtPaidRoom(idCard: Int, limit: Int): List<DebtModel>
@@ -29,7 +32,7 @@ interface WalletRepository {
 
     suspend fun updateDebtRoom(debt: DebtModel)
 
-    suspend fun deleteDebtRoom(id: Int)
+    suspend fun deleteDebtRoom(debt: DebtModel)
 
     suspend fun deleteAllDebtRoom(idCard: Int)
 }

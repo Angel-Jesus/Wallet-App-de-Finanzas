@@ -309,7 +309,6 @@ fun CurrentBalanceCard(lineUsedCard: Float, card: CardModel) {
             modifier = Modifier
                 .padding(start = 14.dp, top = 8.dp),
             text = "Saldo Actual",
-            //color = Color.Black
         )
 
         Text(
@@ -318,7 +317,6 @@ fun CurrentBalanceCard(lineUsedCard: Float, card: CardModel) {
                 .fillMaxWidth()
                 .wrapContentWidth(align = Alignment.CenterHorizontally),
             text = card.nameCard,
-            //color = Color.Black,
             fontSize = 20.sp
         )
 
@@ -344,14 +342,12 @@ fun CurrentBalanceCard(lineUsedCard: Float, card: CardModel) {
                 modifier = Modifier
                     .padding(start = 14.dp),
                 text = card.typeMoney + " " + formatter.format(lineUsedCard),
-                //color = Color.Black
             )
 
             Text(
                 modifier = Modifier
                     .padding(end = 14.dp),
                 text = card.typeMoney + " " + formatter.format(lineAvailable),
-                //color = Color.Black
             )
         }
 
@@ -441,11 +437,9 @@ private fun CardDebtType(data: Map<String, Type>) {
                     .wrapContentSize(align = Alignment.TopStart),
                 text = "Estructura de deuda",
                 fontWeight = FontWeight.Bold,
-                //color = Color.Black
             )
 
             PieChart(
-                //color = Color.Black,
                 data = data
             )
 

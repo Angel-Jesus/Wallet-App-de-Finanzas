@@ -68,12 +68,15 @@ class WalletRepositoryImpl(
                     Categories.Debt[4].copy(value = debtSum)
             }
         }
-
         return debt
     }
 
     override suspend fun getLineUseRoom(idCard: Int, dateInit: Long, dateEnd: Long): Float {
         return walletDao.getLineUseCard(idCard = idCard, dateInit = dateInit, dateEnd = dateEnd)
+    }
+
+    override fun getDebtByCardRoom(idCard: Int): Flow<List<DebtsWalletEntity>> {
+        return walletDao.getDebtsCardById(idCard)
     }
 
     override suspend fun getDebtNotPaidTRoom(idCard: Int): List<DebtModel> {
@@ -104,8 +107,8 @@ class WalletRepositoryImpl(
         walletDao.updateDebtCard(debtCard = debt.toDebtsWalletEntity())
     }
 
-    override suspend fun deleteDebtRoom(id: Int) {
-        walletDao.deleteDebtCard(id)
+    override suspend fun deleteDebtRoom(debt: DebtModel) {
+        walletDao.deleteDebtCard(debtCard = debt.toDebtsWalletEntity())
     }
 
     override suspend fun deleteAllDebtRoom(idCard: Int) {

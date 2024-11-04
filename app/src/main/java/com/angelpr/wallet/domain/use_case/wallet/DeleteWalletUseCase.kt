@@ -1,6 +1,7 @@
 package com.angelpr.wallet.domain.use_case.wallet
 
 import com.angelpr.wallet.data.model.CardModel
+import com.angelpr.wallet.data.model.DebtModel
 import com.angelpr.wallet.domain.repository.WalletRepository
 
 class DeleteWalletUseCase(
@@ -8,4 +9,5 @@ class DeleteWalletUseCase(
 ) {
     suspend fun card(card: CardModel) = repository.deleteCardRoom(card)
     suspend fun allDebtByCard(idCard: Int) = repository.deleteAllDebtRoom(idCard)
+    suspend fun debtByCard(debtModel: DebtModel) = repository.deleteDebtRoom(debtModel)
 }

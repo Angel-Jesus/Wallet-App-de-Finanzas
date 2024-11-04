@@ -27,6 +27,9 @@ interface WalletDao {
     suspend fun deleteCard(card: CardWalletEntity)
 
     // Debt into the database
+    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :idCard ORDER BY id DESC")
+    fun getDebtsCardById(idCard: Int): Flow<List<DebtsWalletEntity>>
+
     @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :idCard AND isPaid = 0 ORDER BY id DESC")
     suspend fun getDebtNotPaidCardById(idCard: Int): List<DebtsWalletEntity>
 
@@ -42,11 +45,8 @@ interface WalletDao {
     @Update
     suspend fun updateDebtCard(debtCard: DebtsWalletEntity)
 
-    @Query("UPDATE debtsWallet_table SET isPaid = :isPaid, quotePaid = :quotasPaid, dateExpired = :dateExpired WHERE id = :id")
-    suspend fun updateDebtCard1(id: Int, quotasPaid: Int, isPaid: Int, dateExpired: Long)
-
-    @Query("DELETE FROM debtsWallet_table WHERE id = :id")
-    suspend fun deleteDebtCard(id: Int)
+    @Delete
+    suspend fun deleteDebtCard(debtCard: DebtsWalletEntity)
 
     @Query("DELETE FROM debtsWallet_table WHERE idWallet = :idCard")
     suspend fun deleteAllDebtCard(idCard: Int)

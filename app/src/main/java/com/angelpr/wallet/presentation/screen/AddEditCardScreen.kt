@@ -56,6 +56,7 @@ import com.angelpr.wallet.presentation.screen.event.CardsEvent
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.CardWalletList
 import com.angelpr.wallet.ui.theme.GreenTopBar
+import com.angelpr.wallet.utils.getDateExpired
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -66,33 +67,23 @@ fun AddEditWalletScreen(
     viewModel: WalletViewModel,
     modeEdit: Boolean,
     navController: NavController
-){
+) {
     val uiStateCard by viewModel.stateCard.collectAsState()
-    val cardModel = if(modeEdit) uiStateCard.cardSelected else null
+    val cardModel = if (modeEdit) uiStateCard.cardSelected else null
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlowAddEditCard.collectLatest { event ->
-            when(event){
-                WalletViewModel.UiEvent.SaveCard -> navController.popBackStack()
-                WalletViewModel.UiEvent.DeleteCard -> navController.popBackStack()
+            when (event) {
+                WalletViewModel.UiEvent.Success -> navController.popBackStack()
             }
         }
     }
 
-    /*
-    var nameCard by remember { mutableStateOf(  "") }
-    var creditLine by remember { mutableStateOf( "0") }
-    var typeMoney by remember { mutableStateOf("PEN") }
-    var dayExpiration by remember { mutableStateOf( "0" ) }
-    var dateClose by remember { mutableStateOf( "0" ) }
-    var colorCard by remember { mutableStateOf(CardWalletList[0].value) }
-    */
-
-    var nameCard by remember { mutableStateOf( cardModel?.nameCard ?: "") }
-    var creditLine by remember { mutableStateOf( cardModel?.creditLineCard ?: "0") }
+    var nameCard by remember { mutableStateOf(cardModel?.nameCard ?: "") }
+    var creditLine by remember { mutableStateOf(cardModel?.creditLineCard ?: "0") }
     var typeMoney by remember { mutableStateOf(cardModel?.typeMoney ?: "PEN") }
-    var dayExpiration by remember { mutableStateOf( (cardModel?.paidDateExpired ?: 0).toString() ) }
-    var dateClose by remember { mutableStateOf( (cardModel?.dateClose ?: 0).toString() ) }
+    var dayExpiration by remember { mutableStateOf((cardModel?.paidDateExpired ?: 0).toString()) }
+    var dateClose by remember { mutableStateOf((cardModel?.dateClose ?: 0).toString()) }
     var colorCard by remember { mutableStateOf(cardModel?.colorCard ?: CardWalletList[0].value) }
 
 
@@ -104,7 +95,7 @@ fun AddEditWalletScreen(
             onDismissRequest = { showDeleteDialog = false },
             positiveButton = {
                 // Create CardModel
-                if(uiStateCard.cardSelected != null){
+                if (uiStateCard.cardSelected != null) {
                     val cardDelete = CardModel(
                         id = uiStateCard.cardSelected!!.id,
                         nameCard = nameCard,
@@ -114,16 +105,16 @@ fun AddEditWalletScreen(
                         dateClose = dateClose.toInt(),
                         colorCard = colorCard
                     )
+                    showDeleteDialog = false
+                    viewModel.onEventCard(CardsEvent.DeleteCard(cardDelete))
+                    /*
                     val dateToday = LocalDate.now()
-                    val dateExpired = viewModel.getDateExpired(
+                    val dateExpired = getDateExpired(
                         cardDelete.paidDateExpired,
                         cardDelete.dateClose,
                         dateToday
                     )
 
-                    showDeleteDialog = false
-                    viewModel.onEventCard(CardsEvent.DeleteCard(cardDelete))
-                    /*
                     viewModel.deleteAllDebt(cardModel.id)
                     viewModel.cancelScheduleNotification(
                         cardModel.nameCard,
@@ -144,18 +135,34 @@ fun AddEditWalletScreen(
                 onBack = { navController.popBackStack() },
                 onDeleteData = { showDeleteDialog = true },
                 onSaveData = {
-                    viewModel.onEventCard(
-                        CardsEvent.AddCard(
-                            CardModel(
-                                nameCard = nameCard,
-                                creditLineCard = creditLine,
-                                typeMoney = typeMoney,
-                                paidDateExpired = dayExpiration.toInt(),
-                                dateClose = dateClose.toInt(),
-                                colorCard = colorCard
+                    if (modeEdit) {
+                        viewModel.onEventCard(
+                            CardsEvent.UpdateCard(
+                                CardModel(
+                                    id = cardModel!!.id,
+                                    nameCard = nameCard,
+                                    creditLineCard = creditLine,
+                                    typeMoney = typeMoney,
+                                    paidDateExpired = dayExpiration.toInt(),
+                                    dateClose = dateClose.toInt(),
+                                    colorCard = colorCard
+                                )
                             )
                         )
-                    )
+                    } else {
+                        viewModel.onEventCard(
+                            CardsEvent.AddCard(
+                                CardModel(
+                                    nameCard = nameCard,
+                                    creditLineCard = creditLine,
+                                    typeMoney = typeMoney,
+                                    paidDateExpired = dayExpiration.toInt(),
+                                    dateClose = dateClose.toInt(),
+                                    colorCard = colorCard
+                                )
+                            )
+                        )
+                    }
                 }
             )
         }

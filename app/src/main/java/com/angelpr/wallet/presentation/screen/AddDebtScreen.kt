@@ -60,6 +60,8 @@ import com.angelpr.wallet.presentation.components.model.Type
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.GreenTopBar
 import com.angelpr.wallet.ui.theme.Wallet
+import com.angelpr.wallet.utils.getDateExpired
+import kotlinx.coroutines.flow.collectLatest
 import java.time.LocalDate
 
 @SuppressLint("NewApi")
@@ -70,27 +72,36 @@ fun AddDebtScreen(
 ) {
 
     val uiCardState by viewModel.stateCard.collectAsState()
-
     val enableNotifications by viewModel.enableNotification.collectAsState()
 
-    var nameCard by remember { mutableStateOf(uiCardState.cardList[0].nameCard) }
-    var typeMoney by remember { mutableStateOf(uiCardState.cardList[0].typeMoney) }
-    var idWallet by remember { mutableIntStateOf(uiCardState.cardList[0].id) }
-    val dayExpired by remember { mutableIntStateOf(uiCardState.cardList[0].paidDateExpired) }
+    var idWallet by remember { mutableIntStateOf(uiCardState.cardSelected!!.id) }
+    var nameCard by remember { mutableStateOf(uiCardState.cardSelected!!.nameCard) }
+    var typeMoney by remember { mutableStateOf(uiCardState.cardSelected!!.typeMoney) }
+    val dayExpired by remember { mutableIntStateOf(uiCardState.cardSelected!!.paidDateExpired) }
     val dayClose by remember { mutableIntStateOf(uiCardState.cardList[0].dateClose) }
 
     var cost by remember { mutableStateOf("") }
     var quotas by remember { mutableStateOf("1") }
     var category by remember { mutableStateOf(Categories.Debt[0].name) }
 
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlowAddEditDebt.collectLatest { event ->
+            when (event) {
+                WalletViewModel.UiEvent.Success -> navController.popBackStack()
+            }
+        }
+    }
+
+
     Scaffold(
         topBar = {
             TopBar(
                 onBack = { navController.popBackStack() },
                 onSaveData = {
+                    /*
                     // Add debt
                     val date = LocalDate.now()
-                    val dateExpired = viewModel.getDateExpired(
+                    val dateExpired = getDateExpired(
                         dayExpired = dayExpired,
                         dateClose = dayClose,
                         dateToday = date
@@ -122,6 +133,8 @@ fun AddDebtScreen(
                         )
                     }
                     navController.popBackStack()
+                     */
+
                 }
             )
         }
@@ -143,8 +156,8 @@ fun AddDebtScreen(
                 paddingTop = 8.dp,
                 listCards = uiCardState.cardList
             ) { card ->
-                nameCard = card.nameCard
                 idWallet = card.id
+                nameCard = card.nameCard
                 typeMoney = card.typeMoney
             }
 

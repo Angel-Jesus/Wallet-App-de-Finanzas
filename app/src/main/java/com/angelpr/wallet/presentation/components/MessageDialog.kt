@@ -32,6 +32,8 @@ import com.angelpr.wallet.R
 fun MessageDialog(
     onDismissRequest: () -> Unit,
     positiveButton: () -> Unit,
+    textPositive: String = "Confirmar",
+    textNegative: String = "Cancelar",
     title: String,
     text: String
 ) {
@@ -83,13 +85,13 @@ fun MessageDialog(
                         onClick = onDismissRequest,
 
                     ) {
-                        Text("Cancelar")
+                        Text(textNegative)
                     }
 
                     TextButton(
                         onClick = positiveButton,
                     ) {
-                        Text("Confirmar")
+                        Text(textPositive)
                     }
                 }
 

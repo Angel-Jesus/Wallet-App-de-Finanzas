@@ -12,7 +12,7 @@ class UpdateWalletUseCase (
     }
 
     suspend fun debtState(debt: DebtModel){
-        repository.updateDebtRoom(debt.copy())
+        repository.updateDebtRoom(debt)
     }
 
 }

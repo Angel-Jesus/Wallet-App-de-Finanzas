@@ -6,7 +6,7 @@ import com.angelpr.wallet.data.db.dao.WalletDao
 import com.angelpr.wallet.data.db.entities.CardWalletEntity
 import com.angelpr.wallet.data.db.entities.DebtsWalletEntity
 
-@Database(entities = [CardWalletEntity::class, DebtsWalletEntity::class], version = 5)
+@Database(entities = [CardWalletEntity::class, DebtsWalletEntity::class], version = 1)
 abstract class WalletDatabase: RoomDatabase() {
     abstract fun getCardDao(): WalletDao
 }
