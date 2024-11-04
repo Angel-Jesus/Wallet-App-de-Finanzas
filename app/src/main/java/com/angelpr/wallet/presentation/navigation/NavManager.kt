@@ -9,31 +9,30 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.presentation.screen.AddDebtScreen
-import com.angelpr.wallet.presentation.screen.AddWalletScreen
+import com.angelpr.wallet.presentation.screen.AddEditWalletScreen
 import com.angelpr.wallet.presentation.screen.DebtScreen
-import com.angelpr.wallet.presentation.screen.EditCardScreen
 import com.angelpr.wallet.presentation.screen.ScreenInit
 import com.angelpr.wallet.presentation.screen.StatisticsScreen
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 
 @SuppressLint("NewApi")
 @Composable
-fun NavManager(viewModel: WalletViewModel) {
+fun NavManager(viewModel: WalletViewModel = hiltViewModel()) {
 
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val cardSelected = rememberSaveable{ mutableIntStateOf(0) }
-    val indexCard = rememberSaveable{ mutableIntStateOf(0) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(key1 = true) {
         viewModel.getEnableNotification()
     }
 
@@ -43,8 +42,7 @@ fun NavManager(viewModel: WalletViewModel) {
     ) {
         composable<ItemsNavScreen.ScreenInit> {
             ScreenInit(
-                indexCard = indexCard,
-                cardId = cardSelected,
+                viewModel = viewModel,
                 drawerState = drawerState,
                 navController = navController
             )
@@ -57,15 +55,17 @@ fun NavManager(viewModel: WalletViewModel) {
             )
         }
 
-        composable<ItemsNavScreen.ScreenAddWallet> {
-            AddWalletScreen(
+        composable<ItemsNavScreen.ScreenAddEditWallet> {
+            val arg = it.toRoute<ItemsNavScreen.ScreenAddEditWallet>()
+            AddEditWalletScreen(
+                viewModel = viewModel,
+                modeEdit = arg.modeEdit,
                 navController = navController
             )
         }
 
         composable<ItemsNavScreen.ScreenDebts>{
             DebtScreen(
-                cardId = cardSelected.intValue,
                 drawerState = drawerState,
                 navController = navController
             )
@@ -96,6 +96,7 @@ fun NavManager(viewModel: WalletViewModel) {
             )
         }
 
+        /*
         composable<ItemsNavScreen.ScreenEditCard>{
             val args = it.toRoute<ItemsNavScreen.ScreenEditCard>()
 
@@ -114,5 +115,7 @@ fun NavManager(viewModel: WalletViewModel) {
                 navController = navController,
             )
         }
+
+         */
     }
 }

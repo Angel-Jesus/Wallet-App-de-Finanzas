@@ -77,7 +77,7 @@ fun EditCardScreen(
                 val dateExpired = viewModel.getDateExpired(cardModel.paidDateExpired, cardModel.dateClose, dateToday)
 
                 showMessageDialog = false
-                viewModel.deleteCard(cardModel.id)
+                //viewModel.deleteCard(cardModel.id)
                 viewModel.deleteAllDebt(cardModel.id)
                 viewModel.cancelScheduleNotification(cardModel.nameCard, LocalDate.ofEpochDay(dateExpired))
                 navController.popBackStack()
@@ -94,6 +94,7 @@ fun EditCardScreen(
                 onBack = { navController.popBackStack() },
                 onDeleteData = { showMessageDialog = true },
                 onSaveData = {
+                    /*
                     viewModel.updateCard(
                         CardModel(
                             id = cardModel.id,
@@ -105,6 +106,8 @@ fun EditCardScreen(
                             colorCard = colorCard
                         )
                     )
+
+                     */
                     navController.popBackStack()
                 }
             )
@@ -407,15 +410,7 @@ private fun TopBar(
             }
         },
         actions = {
-            IconButton(
-                onClick = onDeleteData
-            ) {
-                Icon(
-                    tint = Color.White,
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = "Delete"
-                )
-            }
+
 
             IconButton(
                 onClick = onSaveData

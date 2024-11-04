@@ -1,15 +1,20 @@
 package com.angelpr.wallet.domain.use_case.wallet
 
+import com.angelpr.wallet.data.db.entities.toCardWallet
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.data.model.DebtModel
 import com.angelpr.wallet.domain.repository.WalletRepository
 import com.angelpr.wallet.presentation.components.model.Type
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 
 class GetWalletUseCase(
     private val repository: WalletRepository
 ) {
-    suspend fun allCard(): List<CardModel> = repository.getAllCardRoom()
+    fun allCard(): Flow<List<CardModel>> = repository.getCardsRoom().map{cards ->
+        cards.map { it.toCardWallet() }
+    }
 
     suspend fun getLineUseCard(idCard: Int, dateInit: Long, dateEnd: Long): Float =
         repository.getLineUseRoom(idCard = idCard, dateInit = dateInit, dateEnd = dateEnd)

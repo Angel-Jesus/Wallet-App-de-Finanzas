@@ -1,19 +1,21 @@
 package com.angelpr.wallet.data.db.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.angelpr.wallet.data.db.entities.CardWalletEntity
 import com.angelpr.wallet.data.db.entities.DebtsWalletEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WalletDao {
 
     // Card into the database
     @Query("SELECT * FROM cardWallet_table")
-    suspend fun getAllCards(): List<CardWalletEntity>
+    fun getCards(): Flow<List<CardWalletEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCard(card: CardWalletEntity)
@@ -21,8 +23,8 @@ interface WalletDao {
     @Update
     suspend fun updateCard(card: CardWalletEntity)
 
-    @Query("DELETE FROM cardWallet_table WHERE id = :id")
-    suspend fun deleteCard(id: Int)
+    @Delete
+    suspend fun deleteCard(card: CardWalletEntity)
 
     // Debt into the database
     @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :idCard AND isPaid = 0 ORDER BY id DESC")

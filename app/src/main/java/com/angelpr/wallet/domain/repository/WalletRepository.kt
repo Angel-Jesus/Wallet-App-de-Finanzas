@@ -1,19 +1,20 @@
 package com.angelpr.wallet.domain.repository
 
-import com.angelpr.wallet.data.model.ActionProcess
+import com.angelpr.wallet.data.db.entities.CardWalletEntity
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.data.model.DebtModel
 import com.angelpr.wallet.presentation.components.model.Type
+import kotlinx.coroutines.flow.Flow
 
 interface WalletRepository {
     // Action by Cards
-    suspend fun getAllCardRoom(): List<CardModel>
+    fun getCardsRoom(): Flow<List<CardWalletEntity>>
 
     suspend fun addCardRoom(card: CardModel)
 
     suspend fun updateCardRoom(card: CardModel)
 
-    suspend fun deleteCardRoom(id: Int)
+    suspend fun deleteCardRoom(card: CardModel)
 
     // Action by Debts
     fun getTotalDebtType(debtList: List<DebtModel>): Map<String, Type>

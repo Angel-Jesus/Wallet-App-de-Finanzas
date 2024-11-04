@@ -1,5 +1,7 @@
 package com.angelpr.wallet.presentation.screen
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -12,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -25,13 +28,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -46,43 +51,116 @@ import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.angelpr.wallet.data.model.CardModel
+import com.angelpr.wallet.presentation.components.MessageDialog
+import com.angelpr.wallet.presentation.screen.event.CardsEvent
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.CardWalletList
 import com.angelpr.wallet.ui.theme.GreenTopBar
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 
 @Composable
-fun AddWalletScreen(
-    viewModel: WalletViewModel = hiltViewModel(),
+fun AddEditWalletScreen(
+    viewModel: WalletViewModel,
+    modeEdit: Boolean,
     navController: NavController
-) {
-    var nameWallet by remember { mutableStateOf("") }
-    var creditLine by remember { mutableStateOf("0") }
+){
+    val uiStateCard by viewModel.stateCard.collectAsState()
+    val cardModel = if(modeEdit) uiStateCard.cardSelected else null
+
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlowAddEditCard.collectLatest { event ->
+            when(event){
+                WalletViewModel.UiEvent.SaveCard -> navController.popBackStack()
+                WalletViewModel.UiEvent.DeleteCard -> navController.popBackStack()
+            }
+        }
+    }
+
+    /*
+    var nameCard by remember { mutableStateOf(  "") }
+    var creditLine by remember { mutableStateOf( "0") }
     var typeMoney by remember { mutableStateOf("PEN") }
-    var dayExpiration by remember { mutableStateOf("0") }
-    var dateClose by remember { mutableStateOf("0") }
-    var colorCard by remember { mutableStateOf(CardWalletList[0]) }
+    var dayExpiration by remember { mutableStateOf( "0" ) }
+    var dateClose by remember { mutableStateOf( "0" ) }
+    var colorCard by remember { mutableStateOf(CardWalletList[0].value) }
+    */
+
+    var nameCard by remember { mutableStateOf( cardModel?.nameCard ?: "") }
+    var creditLine by remember { mutableStateOf( cardModel?.creditLineCard ?: "0") }
+    var typeMoney by remember { mutableStateOf(cardModel?.typeMoney ?: "PEN") }
+    var dayExpiration by remember { mutableStateOf( (cardModel?.paidDateExpired ?: 0).toString() ) }
+    var dateClose by remember { mutableStateOf( (cardModel?.dateClose ?: 0).toString() ) }
+    var colorCard by remember { mutableStateOf(cardModel?.colorCard ?: CardWalletList[0].value) }
+
+
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+
+    if (showDeleteDialog) {
+        MessageDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            positiveButton = {
+                // Create CardModel
+                if(uiStateCard.cardSelected != null){
+                    val cardDelete = CardModel(
+                        id = uiStateCard.cardSelected!!.id,
+                        nameCard = nameCard,
+                        creditLineCard = creditLine,
+                        typeMoney = typeMoney,
+                        paidDateExpired = dayExpiration.toInt(),
+                        dateClose = dateClose.toInt(),
+                        colorCard = colorCard
+                    )
+                    val dateToday = LocalDate.now()
+                    val dateExpired = viewModel.getDateExpired(
+                        cardDelete.paidDateExpired,
+                        cardDelete.dateClose,
+                        dateToday
+                    )
+
+                    showDeleteDialog = false
+                    viewModel.onEventCard(CardsEvent.DeleteCard(cardDelete))
+                    /*
+                    viewModel.deleteAllDebt(cardModel.id)
+                    viewModel.cancelScheduleNotification(
+                        cardModel.nameCard,
+                        LocalDate.ofEpochDay(dateExpired)
+                    )
+                     */
+                }
+            },
+            title = "Eliminar tarjeta",
+            text = "Si elimina la tarjeta se eliminarán todos los registros de deuda vinculadas a ella. ¿Desea continuar?"
+        )
+    }
 
     Scaffold(
         topBar = {
             TopBar(
+                modeEdit = modeEdit,
                 onBack = { navController.popBackStack() },
+                onDeleteData = { showDeleteDialog = true },
                 onSaveData = {
-                    viewModel.addNewCard(
-                        CardModel(
-                            nameCard = nameWallet,
-                            creditLineCard = creditLine,
-                            typeMoney = typeMoney,
-                            paidDateExpired = dayExpiration.toInt(),
-                            dateClose = dateClose.toInt(),
-                            colorCard = colorCard.value
+                    viewModel.onEventCard(
+                        CardsEvent.AddCard(
+                            CardModel(
+                                nameCard = nameCard,
+                                creditLineCard = creditLine,
+                                typeMoney = typeMoney,
+                                paidDateExpired = dayExpiration.toInt(),
+                                dateClose = dateClose.toInt(),
+                                colorCard = colorCard
+                            )
                         )
                     )
-                    navController.popBackStack()
                 }
             )
         }
     ) { innerPadding ->
+
         Column(
             modifier = Modifier.padding(innerPadding)
         ) {
@@ -98,9 +176,9 @@ fun AddWalletScreen(
                 modifier = Modifier
                     .padding(start = 8.dp, end = 8.dp)
                     .fillMaxWidth(),
-                value = nameWallet,
+                value = nameCard,
                 onValueChange = { newValue ->
-                    nameWallet = newValue
+                    nameCard = newValue
                 },
                 singleLine = true,
                 /*
@@ -198,9 +276,9 @@ fun AddWalletScreen(
                     },
                 value = dayExpiration,
                 onValueChange = { newValue ->
-                    if (newValue == ""){
+                    if (newValue == "") {
                         dayExpiration = newValue
-                    } else if(newValue.toInt() in 0..31){
+                    } else if (newValue.toInt() in 0..31) {
                         dayExpiration = newValue
                     }
                 },
@@ -240,9 +318,9 @@ fun AddWalletScreen(
                     },
                 value = dateClose,
                 onValueChange = { newValue ->
-                    if(newValue == ""){
+                    if (newValue == "") {
                         dateClose = newValue
-                    } else if (newValue.toInt() in 0..31){
+                    } else if (newValue.toInt() in 0..31) {
                         dateClose = newValue
                     }
                 },
@@ -265,6 +343,7 @@ fun AddWalletScreen(
                 fontSize = 13.sp
             )
             DropDownColors(
+                color = colorCard,
                 paddingStart = 8.dp,
                 paddingEnd = 8.dp,
                 paddingTop = 8.dp
@@ -277,14 +356,15 @@ fun AddWalletScreen(
 
 @Composable
 private fun DropDownColors(
+    color: ULong,
     paddingStart: Dp = 0.dp,
     paddingEnd: Dp = 0.dp,
     paddingTop: Dp = 0.dp,
     paddingBottom: Dp = 0.dp,
-    colorSelected: (Color) -> Unit
+    colorSelected: (ULong) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var colorCard by remember { mutableStateOf(CardWalletList[0]) }
+    var colorCard by remember { mutableStateOf(Color(color)) }
     var textFiledSize by remember { mutableStateOf(Size.Zero) }
 
     val icon = if (expanded) {
@@ -364,7 +444,7 @@ private fun DropDownColors(
                     onClick = {
                         colorCard = color
                         expanded = false
-                        colorSelected(color)
+                        colorSelected(color.value)
                     }
                 )
             }
@@ -377,7 +457,9 @@ private fun DropDownColors(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TopBar(
+    modeEdit: Boolean,
     onBack: () -> Unit,
+    onDeleteData: () -> Unit,
     onSaveData: () -> Unit
 ) {
     TopAppBar(
@@ -393,6 +475,18 @@ private fun TopBar(
             }
         },
         actions = {
+            if (modeEdit) {
+                IconButton(
+                    onClick = onDeleteData
+                ) {
+                    Icon(
+                        tint = Color.White,
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = "Delete"
+                    )
+                }
+            }
+
             IconButton(
                 onClick = onSaveData
             ) {
@@ -413,15 +507,3 @@ private fun TopBar(
     )
 }
 
-/*
-@Preview(showBackground = true)
-@Composable
-fun AddWalletPreview(){
-    MaterialTheme {
-        AddWalletScreen(
-            navController = rememberNavController()
-        )
-    }
-}
-
- */

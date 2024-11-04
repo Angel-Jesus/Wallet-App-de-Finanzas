@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.angelpr.wallet.data.model.ActionProcess
+import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.presentation.components.MessageDialog
 import com.angelpr.wallet.presentation.components.NavigatorDrawer
 import com.angelpr.wallet.presentation.components.WarningDialog
@@ -64,7 +65,6 @@ import java.time.LocalDate
 
 @Composable
 fun DebtScreen(
-    cardId: Int,
     viewModel: WalletViewModel = hiltViewModel(),
     drawerState: DrawerState,
     navController: NavController
@@ -96,7 +96,7 @@ fun DebtScreen(
         Log.i("DebtScreen", "state: ${uiDebtState.state.name}")
 
         if (uiDebtState.state == ActionProcess.SUCCESS || uiDebtState.state == ActionProcess.UPDATE_DEBT_BY_CARD) {
-            viewModel.getDebtByCard(idCard = cardId, limit = 20)
+            viewModel.getDebtByCard(idCard = uiCardState.cardSelected!!.id, limit = 20)
         }
         if (uiDebtState.debtNotPaidList.isNotEmpty()) {
             if(uiDebtState.state == ActionProcess.DEBT_BY_CARD){
@@ -134,12 +134,15 @@ fun DebtScreen(
             onDismissRequest = { showPaidQuotaDialog.value = false },
             positiveButton = {
                 // Update state of card's debt
+                /*
                 viewModel.updateDebtState(
                     id = uiDebtState.debtNotPaidList[indexDebt.intValue].id,
                     quotas = uiDebtState.debtNotPaidList[indexDebt.intValue].quotas,
                     quotasPaid = uiDebtState.debtNotPaidList[indexDebt.intValue].quotePaid + 1,
                     date = uiDebtState.debtNotPaidList[indexDebt.intValue].dateExpired
                 )
+
+                 */
                 cardName = uiDebtState.debtNotPaidList[indexDebt.intValue].nameCard
                 dateExpired = uiDebtState.debtNotPaidList[indexDebt.intValue].dateExpired
 

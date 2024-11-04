@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,13 +68,8 @@ fun AddDebtScreen(
     viewModel: WalletViewModel = hiltViewModel(),
     navController: NavController
 ) {
-    val scope = rememberCoroutineScope()
 
     val uiCardState by viewModel.stateCard.collectAsState()
-
-    LaunchedEffect(scope) {
-        viewModel.getAllCard()
-    }
 
     val enableNotifications by viewModel.enableNotification.collectAsState()
 

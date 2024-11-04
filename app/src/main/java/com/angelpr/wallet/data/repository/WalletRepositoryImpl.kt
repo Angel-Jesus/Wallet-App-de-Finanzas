@@ -13,19 +13,16 @@ import com.angelpr.wallet.domain.repository.WalletRepository
 import com.angelpr.wallet.presentation.components.model.Categories
 import com.angelpr.wallet.presentation.components.model.Type
 import com.angelpr.wallet.utils.sumOfFloat
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class WalletRepositoryImpl(
     private val walletDao: WalletDao
 ) : WalletRepository {
 
     // Action by Cards
-    override suspend fun getAllCardRoom(): List<CardModel> {
-        val response: List<CardWalletEntity> = walletDao.getAllCards()
-        return if (response.isNotEmpty()) {
-            response.map { it.toCardWallet() }
-        } else {
-            emptyList()
-        }
+    override fun getCardsRoom(): Flow<List<CardWalletEntity>> {
+        return walletDao.getCards()
     }
 
     override suspend fun addCardRoom(card: CardModel) {
@@ -36,8 +33,8 @@ class WalletRepositoryImpl(
         walletDao.updateCard(card.toCardWalletEntity())
     }
 
-    override suspend fun deleteCardRoom(id: Int) {
-        walletDao.deleteCard(id)
+    override suspend fun deleteCardRoom(card: CardModel) {
+        walletDao.deleteCard(card.toCardWalletEntity())
     }
 
     // Action by Debts

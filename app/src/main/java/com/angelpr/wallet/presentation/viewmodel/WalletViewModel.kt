@@ -1,5 +1,6 @@
 package com.angelpr.wallet.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.angelpr.wallet.data.model.ActionProcess
@@ -9,9 +10,15 @@ import com.angelpr.wallet.domain.use_case.DataStoreUseCase
 import com.angelpr.wallet.domain.use_case.NotificationUseCase
 import com.angelpr.wallet.domain.use_case.wallet.WalletUseCases
 import com.angelpr.wallet.presentation.components.model.Type
+import com.angelpr.wallet.presentation.screen.event.CardsEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -45,6 +52,18 @@ class WalletViewModel @Inject constructor(
     private val _totalDebtType = MutableStateFlow(emptyMap<String, Type>())
     val totalDebtType = _totalDebtType.asStateFlow()
 
+    private val _eventFlowAddEditCard = MutableSharedFlow<UiEvent>()
+    val eventFlowAddEditCard = _eventFlowAddEditCard.asSharedFlow()
+
+    private val _cardSelected = MutableStateFlow<CardModel?>(null)
+    val cardSelected = _cardSelected.asStateFlow()
+
+    init {
+        getCards()
+    }
+
+    private var getCardsJob: Job? = null
+
     // Permission
     fun updateShowDialog(show: Boolean) {
         _showDialog.update { show }
@@ -55,56 +74,50 @@ class WalletViewModel @Inject constructor(
     }
 
     // DataStore
-    fun updateEnableNotification(enable: Boolean){
+    fun updateEnableNotification(enable: Boolean) {
         viewModelScope.launch {
             dataStoreUseCase.updateNotification(enable)
         }
     }
 
-    fun getEnableNotification(){
+    fun getEnableNotification() {
         viewModelScope.launch {
-            dataStoreUseCase.getNotification().collect{enable ->
+            dataStoreUseCase.getNotification().collect { enable ->
                 _enableNotification.update { enable }
             }
         }
     }
 
     // Action by Cards
-    fun getAllCard() {
-        viewModelScope.launch {
-            _stateCard.update { it.copy(state = ActionProcess.LOADING) }
-            val result = walletUseCases.getWallet.allCard()
-            _stateCard.update { it.copy(state = ActionProcess.ALL_CARD, cardList = result) }
-        }
-    }
+    fun onEventCard(event: CardsEvent) {
+        when (event) {
+            is CardsEvent.GetCards -> getCards()
 
-    fun addNewCard(cardModel: CardModel) {
-        viewModelScope.launch {
-            walletUseCases.addWallet.card(cardModel)
+            is CardsEvent.AddCard -> {
+                viewModelScope.launch {
+                    walletUseCases.addWallet.card(event.card)
+                    _eventFlowAddEditCard.emit(UiEvent.SaveCard)
+                }
+            }
 
-            // Revisar esto
-            _stateCard.update { it.copy(state = ActionProcess.LOADING) }
-            _stateCard.update { it.copy(state = ActionProcess.SUCCESS) }
-        }
-    }
+            is CardsEvent.DeleteCard -> {
+                viewModelScope.launch {
+                    walletUseCases.deleteWallet.card(event.card)
+                    _stateCard.update { it.copy(cardSelected = null) }
+                    _eventFlowAddEditCard.emit(UiEvent.DeleteCard)
+                }
+            }
 
-    fun updateCard(cardModel: CardModel) {
-        viewModelScope.launch {
-            walletUseCases.updateWallet.card(cardModel)
+            is CardsEvent.UpdateCard -> {
+                viewModelScope.launch {
+                    walletUseCases.updateWallet.card(event.card)
+                }
+            }
 
-            // Revisar
-            _stateCard.update { it.copy(state = ActionProcess.LOADING) }
-            _stateCard.update { it.copy(state = ActionProcess.SUCCESS) }
-        }
-    }
-
-    fun deleteCard(id: Int) {
-        viewModelScope.launch {
-            walletUseCases.deleteWallet.card(id)
-
-            // Revisar
-            _stateCard.update { it.copy(state = ActionProcess.LOADING) }
-            _stateCard.update { it.copy(state = ActionProcess.SUCCESS) }
+            is CardsEvent.CardSelected -> {
+                _stateCard.update { it.copy(cardSelected = event.card) }
+                //_cardSelected.update { event.card }
+            }
         }
     }
 
@@ -200,7 +213,8 @@ class WalletViewModel @Inject constructor(
             notificationId = notificationId,
             year = year,
             month = month,
-            day = day)
+            day = day
+        )
     }
 
     fun cancelScheduleNotification(cardName: String, dateExpired: LocalDate) {
@@ -222,11 +236,28 @@ class WalletViewModel @Inject constructor(
         return date.toEpochDay()
     }
 
-    // DataClass of State
+    private fun getInitDate(date: Int): LocalDate {
+        val today = LocalDate.now()
+        return LocalDate.of(today.year, today.month, date)
+    }
 
+    private fun getCards() {
+        getCardsJob?.cancel()
+        getCardsJob = walletUseCases.getWallet.allCard()
+            .onEach { cards ->
+                Log.d("viewModel", "start getCards")
+                _stateCard.value = stateCard.value.copy(
+                    cardList = cards,
+                    cardSelected = if(stateCard.value.cardSelected == null) cards.firstOrNull() else stateCard.value.cardSelected,
+                )
+            }
+            .launchIn(viewModelScope)
+    }
+
+    // DataClass of State
     data class UiStateCard(
         val cardList: List<CardModel> = emptyList(),
-        var state: ActionProcess = ActionProcess.NOT_AVAILABLE
+        val cardSelected: CardModel? = null
     )
 
     data class UiStateDebt(
@@ -235,9 +266,9 @@ class WalletViewModel @Inject constructor(
         var state: ActionProcess = ActionProcess.NOT_AVAILABLE
     )
 
-    private fun getInitDate(date: Int): LocalDate {
-        val today = LocalDate.now()
-        return LocalDate.of(today.year, today.month, date)
+    sealed class UiEvent{
+        data object SaveCard: UiEvent()
+        data object DeleteCard: UiEvent()
     }
 
 }
