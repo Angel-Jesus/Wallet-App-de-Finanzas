@@ -53,6 +53,7 @@ import androidx.navigation.NavController
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.presentation.components.MessageDialog
 import com.angelpr.wallet.presentation.screen.event.CardsEvent
+import com.angelpr.wallet.presentation.screen.event.DebtsEvent
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.CardWalletList
 import com.angelpr.wallet.ui.theme.GreenTopBar
@@ -69,6 +70,8 @@ fun AddEditWalletScreen(
     navController: NavController
 ) {
     val uiStateCard by viewModel.stateCard.collectAsState()
+    val uiStateDebt by viewModel.stateDebt.collectAsState()
+
     val cardModel = if (modeEdit) uiStateCard.cardSelected else null
 
     LaunchedEffect(key1 = true) {
@@ -94,8 +97,10 @@ fun AddEditWalletScreen(
         MessageDialog(
             onDismissRequest = { showDeleteDialog = false },
             positiveButton = {
-                // Create CardModel
                 if (uiStateCard.cardSelected != null) {
+
+                    val datesExpiredList = uiStateDebt.debtNotPaidList.map { it.dateExpired }.distinct()
+
                     val cardDelete = CardModel(
                         id = uiStateCard.cardSelected!!.id,
                         nameCard = nameCard,
@@ -106,23 +111,13 @@ fun AddEditWalletScreen(
                         colorCard = colorCard
                     )
                     showDeleteDialog = false
+                    viewModel.onEventDebt(DebtsEvent.DeleteAllDebts(cardDelete.id))
                     viewModel.onEventCard(CardsEvent.DeleteCard(cardDelete))
-                    /*
-                    val dateToday = LocalDate.now()
-                    val dateExpired = getDateExpired(
-                        cardDelete.paidDateExpired,
-                        cardDelete.dateClose,
-                        dateToday
-                    )
+                    viewModel.cancelScheduleNotification(cardDelete.nameCard, datesExpiredList)
 
-                    viewModel.deleteAllDebt(cardModel.id)
-                    viewModel.cancelScheduleNotification(
-                        cardModel.nameCard,
-                        LocalDate.ofEpochDay(dateExpired)
-                    )
-                     */
                 }
             },
+            negativeButton = { showDeleteDialog = false },
             title = "Eliminar tarjeta",
             text = "Si elimina la tarjeta se eliminarán todos los registros de deuda vinculadas a ella. ¿Desea continuar?"
         )

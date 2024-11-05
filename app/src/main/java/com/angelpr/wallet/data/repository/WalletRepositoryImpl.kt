@@ -79,26 +79,6 @@ class WalletRepositoryImpl(
         return walletDao.getDebtsCardById(idCard)
     }
 
-    override suspend fun getDebtNotPaidTRoom(idCard: Int): List<DebtModel> {
-        val response: List<DebtsWalletEntity> = walletDao.getDebtNotPaidCardById(idCard = idCard)
-
-        return if (response.isNotEmpty()) {
-            return response.map { it.toDebtsWallet() }
-        } else {
-            emptyList()
-        }
-    }
-
-    override suspend fun getDebtPaidRoom(idCard: Int, limit: Int): List<DebtModel> {
-        val response: List<DebtsWalletEntity> =
-            walletDao.getDebtPaidCardById(idCard = idCard, limit = limit)
-        return if (response.isNotEmpty()) {
-            response.map { it.toDebtsWallet() }
-        } else {
-            emptyList()
-        }
-    }
-
     override suspend fun addDebtRoom(debt: DebtModel) {
         walletDao.addDebtCard(debt.toDebtsWalletEntity())
     }
@@ -116,19 +96,3 @@ class WalletRepositoryImpl(
     }
 
 }
-
-/*
-override suspend fun updateDebtRoom(
-        id: Int,
-        quotas: Int,
-        quotasPaid: Int,
-        dateExpired: Long
-    ): ActionProcess {
-
-        val isPaid = if (quotasPaid == quotas) 1 else 0
-        val date = getMonthInCase(dateExpired, quotas == quotasPaid)
-
-        walletDao.updateDebtCard(debtCard = )
-        return ActionProcess.UPDATE_DEBT_BY_CARD
-    }
- */

@@ -57,6 +57,7 @@ import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.data.model.DebtModel
 import com.angelpr.wallet.presentation.components.model.Categories
 import com.angelpr.wallet.presentation.components.model.Type
+import com.angelpr.wallet.presentation.screen.event.DebtsEvent
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.GreenTopBar
 import com.angelpr.wallet.ui.theme.Wallet
@@ -67,18 +68,14 @@ import java.time.LocalDate
 @SuppressLint("NewApi")
 @Composable
 fun AddDebtScreen(
-    viewModel: WalletViewModel = hiltViewModel(),
+    viewModel: WalletViewModel,
     navController: NavController
 ) {
 
     val uiCardState by viewModel.stateCard.collectAsState()
     val enableNotifications by viewModel.enableNotification.collectAsState()
 
-    var idWallet by remember { mutableIntStateOf(uiCardState.cardSelected!!.id) }
-    var nameCard by remember { mutableStateOf(uiCardState.cardSelected!!.nameCard) }
-    var typeMoney by remember { mutableStateOf(uiCardState.cardSelected!!.typeMoney) }
-    val dayExpired by remember { mutableIntStateOf(uiCardState.cardSelected!!.paidDateExpired) }
-    val dayClose by remember { mutableIntStateOf(uiCardState.cardList[0].dateClose) }
+    var cardItem by remember { mutableStateOf(uiCardState.cardList[0]) }
 
     var cost by remember { mutableStateOf("") }
     var quotas by remember { mutableStateOf("1") }
@@ -92,34 +89,13 @@ fun AddDebtScreen(
         }
     }
 
-
     Scaffold(
         topBar = {
             TopBar(
                 onBack = { navController.popBackStack() },
                 onSaveData = {
-                    /*
-                    // Add debt
-                    val date = LocalDate.now()
-                    val dateExpired = getDateExpired(
-                        dayExpired = dayExpired,
-                        dateClose = dayClose,
-                        dateToday = date
-                    )
-
-                    viewModel.addDebt(
-                        DebtModel(
-                            idWallet = idWallet,
-                            nameCard = nameCard,
-                            typeMoney = typeMoney,
-                            debt = cost.toFloat(),
-                            type = category,
-                            isPaid = 0,
-                            quotas = quotas.toInt(),
-                            date = date.toEpochDay(),
-                            dateExpired = dateExpired,
-                        )
-                    )
+                    val dateExpired =
+                        getDateExpired(cardItem.paidDateExpired, cardItem.dateClose)
 
                     // Add schedule Notification
                     // Add conditional to enable or disable option to schedule notification
@@ -127,14 +103,27 @@ fun AddDebtScreen(
                     // In case there are notification with the same id, the notification will be updated
                     if (enableNotifications) {
                         viewModel.setScheduleNotification(
-                            cardName = nameCard,
+                            cardName = cardItem.nameCard,
                             daysToSubtract = 7,
                             dateExpired = LocalDate.ofEpochDay(dateExpired)
                         )
                     }
-                    navController.popBackStack()
-                     */
-
+                    // Add debt
+                    viewModel.onEventDebt(
+                        DebtsEvent.AddDebts(
+                            DebtModel(
+                                idWallet = cardItem.id,
+                                nameCard = cardItem.nameCard,
+                                typeMoney = cardItem.typeMoney,
+                                debt = cost.toFloat(),
+                                type = category,
+                                isPaid = 0,
+                                quotas = quotas.toInt(),
+                                date = LocalDate.now().toEpochDay(),
+                                dateExpired = dateExpired,
+                            )
+                        )
+                    )
                 }
             )
         }
@@ -156,9 +145,7 @@ fun AddDebtScreen(
                 paddingTop = 8.dp,
                 listCards = uiCardState.cardList
             ) { card ->
-                idWallet = card.id
-                nameCard = card.nameCard
-                typeMoney = card.typeMoney
+                cardItem = card
             }
 
             Text(

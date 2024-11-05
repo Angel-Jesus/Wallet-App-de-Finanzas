@@ -30,12 +30,6 @@ interface WalletDao {
     @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :idCard ORDER BY id DESC")
     fun getDebtsCardById(idCard: Int): Flow<List<DebtsWalletEntity>>
 
-    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :idCard AND isPaid = 0 ORDER BY id DESC")
-    suspend fun getDebtNotPaidCardById(idCard: Int): List<DebtsWalletEntity>
-
-    @Query("SELECT * FROM debtsWallet_table WHERE idWallet = :idCard AND isPaid = 1 ORDER BY id DESC LIMIT :limit")
-    suspend fun getDebtPaidCardById(idCard: Int, limit: Int): List<DebtsWalletEntity>
-
     @Query("SELECT SUM(CASE WHEN quotas > 1 THEN debt/quotas ELSE debt END) AS total_debt FROM debtsWallet_table WHERE idWallet = :idCard AND date BETWEEN :dateInit AND :dateEnd")
     suspend fun getLineUseCard(idCard: Int, dateInit: Long, dateEnd: Long): Float
 

@@ -21,19 +21,23 @@ object Constants{
 
 }
 
-fun getDateExpired(dayExpired: Int, dateClose: Int, dateToday: LocalDate): Long {
+fun getMonthInCase(date: Long, isNextMonth: Boolean): Long {
+    return if (isNextMonth) LocalDate.ofEpochDay(date).plusMonths(1)
+        .toEpochDay() else date
+}
+
+fun getDateExpired(dayExpired: Int, dateClose: Int): Long {
+    val dateToday = LocalDate.now()
     val dateMonthToday = LocalDate.of(dateToday.year, dateToday.month.value, dayExpired)
 
-    val date = if (dateToday.dayOfMonth > dateClose) {
-        dateMonthToday.plusMonths(2)
+    return if (dateToday.dayOfMonth > dateClose) {
+        dateMonthToday.plusMonths(2).toEpochDay()
     } else {
-        dateMonthToday.plusMonths(1)
+        dateMonthToday.plusMonths(1).toEpochDay()
     }
-
-    return date.toEpochDay()
 }
 
 fun getInitDate(date: Int): LocalDate {
     val today = LocalDate.now()
-    return LocalDate.of(today.year, today.month, date)
+    return if(today.dayOfMonth < date) LocalDate.of(today.year, today.month.plus(-1), date) else LocalDate.of(today.year, today.month, date)
 }

@@ -75,44 +75,10 @@ fun ScreenInit(
 ) {
     val scope = rememberCoroutineScope()
 
-    // Get uiState of Card
     val uiCardState by viewModel.stateCard.collectAsState()
-    val lineUsedCard by viewModel.totalDebtCard.collectAsState()
-
-    // Get uiState of Debt
     val uiDebtState by viewModel.stateDebt.collectAsState()
-    val debtTypeList by viewModel.totalDebtType.collectAsState()
 
-    var showDebtType by remember { mutableStateOf(false) }
     var colorContainer by remember { mutableStateOf(Color.Gray.value) }
-
-    /*
-    LaunchedEffect(Unit){
-        viewModel.onEventCard(CardsEvent.GetCards)
-    }
-
-    LaunchedEffect(key1 = uiCardState.state, key2 = indexCard.intValue) {
-        if (uiCardState.cardList.isNotEmpty()) {
-            // Save cardId to use in DebtScreen
-            cardId.intValue = uiCardState.cardList[indexCard.intValue].id
-
-            viewModel.getLineUseCard(
-                cardId.intValue,
-                uiCardState.cardList[indexCard.intValue].dateClose
-            )
-            viewModel.getDebtByCard(cardId.intValue)
-        }
-    }
-
-    LaunchedEffect(uiDebtState.state) {
-        if (uiDebtState.debtNotPaidList.isNotEmpty() && uiDebtState.state == ActionProcess.DEBT_BY_CARD) {
-            showDebtType = true
-            viewModel.getDebtByType(uiDebtState.debtNotPaidList)
-        }else{
-            showDebtType = false
-        }
-    }
-    */
 
     NavigatorDrawer(
         viewModel = viewModel,
@@ -182,18 +148,18 @@ fun ScreenInit(
                     item {
                         // Show current balance
                         CurrentBalanceCard(
-                            lineUsedCard = lineUsedCard,
+                            lineUsedCard = uiCardState.lineUseCard,
                             card = uiCardState.cardSelected!!
                         )
                     }
                 }
-                /*
-                if (showDebtType) {
+
+                if (uiDebtState.totalDebtByType.isNotEmpty()) {
                     item {
-                        CardDebtType(debtTypeList)
+                        CardDebtType(uiDebtState.totalDebtByType)
                     }
                 }
-                 */
+
             }
         }
     }

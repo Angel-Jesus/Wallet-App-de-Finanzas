@@ -1,5 +1,6 @@
 package com.angelpr.wallet.domain.use_case.wallet
 
+import android.util.Log
 import com.angelpr.wallet.data.db.entities.toCardWallet
 import com.angelpr.wallet.data.db.entities.toDebtsWallet
 import com.angelpr.wallet.data.model.CardModel
@@ -9,6 +10,7 @@ import com.angelpr.wallet.presentation.components.model.Type
 import com.angelpr.wallet.utils.getInitDate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 
 
 class GetWalletUseCase(
@@ -35,13 +37,8 @@ class GetWalletUseCase(
         val endDate = end.toEpochDay()
 
         //idCard: Int, dateInit: Long, dateEnd: Long
+        Log.d("getWalletUseCase", "parameter: id ${card.id} dateInit ${LocalDate.ofEpochDay(initDate)} dateEnd $endDate")
         return repository.getLineUseRoom(idCard = card.id, dateInit = initDate, dateEnd = endDate)
     }
 
-
-    suspend fun getDebtNotPaidCard(idCard: Int): List<DebtModel> =
-        repository.getDebtNotPaidTRoom(idCard)
-
-    suspend fun getDebtPaidCard(idCard: Int, limit: Int): List<DebtModel> =
-        repository.getDebtPaidRoom(idCard = idCard, limit = limit)
 }

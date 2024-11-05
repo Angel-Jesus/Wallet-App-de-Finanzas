@@ -24,10 +24,6 @@ interface WalletRepository {
 
     fun getDebtByCardRoom(idCard: Int): Flow<List<DebtsWalletEntity>>
 
-    suspend fun getDebtNotPaidTRoom(idCard: Int): List<DebtModel>
-
-    suspend fun getDebtPaidRoom(idCard: Int, limit: Int): List<DebtModel>
-
     suspend fun addDebtRoom(debt: DebtModel)
 
     suspend fun updateDebtRoom(debt: DebtModel)

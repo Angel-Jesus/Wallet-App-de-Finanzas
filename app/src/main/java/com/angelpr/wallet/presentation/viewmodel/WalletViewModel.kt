@@ -1,5 +1,7 @@
 package com.angelpr.wallet.presentation.viewmodel
 
+import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.angelpr.wallet.data.model.CardModel
@@ -10,10 +12,8 @@ import com.angelpr.wallet.domain.use_case.wallet.WalletUseCases
 import com.angelpr.wallet.presentation.components.model.Type
 import com.angelpr.wallet.presentation.screen.event.CardsEvent
 import com.angelpr.wallet.presentation.screen.event.DebtsEvent
-import com.angelpr.wallet.utils.getInitDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -31,6 +31,8 @@ class WalletViewModel @Inject constructor(
     private val notificationUseCase: NotificationUseCase,
     private val dataStoreUseCase: DataStoreUseCase
 ) : ViewModel() {
+
+    private val stateInit = mutableStateOf(true)
 
     private val _enableNotification = MutableStateFlow(false)
     val enableNotification = _enableNotification.asStateFlow()
@@ -53,16 +55,8 @@ class WalletViewModel @Inject constructor(
     private val _eventFlowAddEditDebt = MutableSharedFlow<UiEvent>()
     val eventFlowAddEditDebt = _eventFlowAddEditDebt.asSharedFlow()
 
-    // Variable old for check update
-    private val _totalDebtCard = MutableStateFlow(0.0f)
-    val totalDebtCard = _totalDebtCard.asStateFlow()
-
-    private val _totalDebtType = MutableStateFlow(emptyMap<String, Type>())
-    val totalDebtType = _totalDebtType.asStateFlow()
-
     init {
         getCards()
-        getDebtsByCard(stateCard.value.cardSelected?.id ?: 0)
     }
 
     private var getCardsJob: Job? = null
@@ -92,7 +86,7 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-
+    // Events
     fun onEventCard(event: CardsEvent) {
         when (event) {
             is CardsEvent.GetCards -> getCards()
@@ -125,10 +119,10 @@ class WalletViewModel @Inject constructor(
                     _stateCard.update {
                         it.copy(
                             cardSelected = event.card,
-                            lineUseCard = walletUseCases.getWallet.getLineUseCard(event.card),
-
+                            lineUseCard = walletUseCases.getWallet.getLineUseCard(event.card)
                         )
                     }
+
                     getDebtsByCard(event.card.id)
                 }
 
@@ -190,24 +184,33 @@ class WalletViewModel @Inject constructor(
         )
     }
 
-    fun cancelScheduleNotification(cardName: String, dateExpired: LocalDate) {
-        val notificationId =
-            dateExpired.year * 10000 + dateExpired.monthValue * 100 + dateExpired.dayOfMonth + cardName.hashCode()
-        notificationUseCase.cancel(notificationId)
+    fun cancelScheduleNotification(cardName: String, dates: List<Long>) {
+        for (date in dates) {
+            val dateExpired = LocalDate.ofEpochDay(date)
+            val notificationId =
+                dateExpired.year * 10000 + dateExpired.monthValue * 100 + dateExpired.dayOfMonth + cardName.hashCode()
+            notificationUseCase.cancel(notificationId)
+        }
     }
 
+    // Jobs
     private fun getCards() {
         getCardsJob?.cancel()
         getCardsJob = walletUseCases.getWallet.allCard()
             .onEach { cards ->
                 val isNullCardSelected = stateCard.value.cardSelected == null
+                val cardInit = cards.firstOrNull()
                 _stateCard.value = stateCard.value.copy(
                     cardList = cards,
-                    cardSelected = if (isNullCardSelected) cards.firstOrNull() else stateCard.value.cardSelected,
-                    lineUseCard = if (!isNullCardSelected) walletUseCases.getWallet.getLineUseCard(
-                        stateCard.value.cardSelected!!
-                    ) else 0.0f
+                    cardSelected = if (isNullCardSelected) cardInit else stateCard.value.cardSelected
                 )
+
+                // Only execute first time
+                if (stateInit.value) {
+                    stateInit.value = false
+                    getDebtsByCard(_stateCard.value.cardSelected?.id ?: 0)
+                }
+
             }
             .launchIn(viewModelScope)
     }
@@ -216,11 +219,17 @@ class WalletViewModel @Inject constructor(
         getDebtsJob?.cancel()
         getDebtsJob = walletUseCases.getWallet.getDebtCard(idCard = id)
             .onEach { debts ->
+                val debtsNotPaid = debts.filter { it.isPaid == 0 }
+                val debtsPaid = debts.filter { it.isPaid == 1 }
+
                 _stateDebt.value = stateDebt.value.copy(
-                    debtNotPaidList = debts.filter { it.isPaid == 0 },
-                    debtPaidList = debts.filter { it.isPaid == 1 }.take(limit),
-                    totalDebtByType = walletUseCases.getWallet.getTotalDebtType(debts),
-                    //totalDebtCard =
+                    debtNotPaidList = debtsNotPaid,
+                    debtPaidList = debtsPaid.take(limit),
+                    totalDebtByType = walletUseCases.getWallet.getTotalDebtType(debtsNotPaid)
+                )
+
+                _stateCard.value = stateCard.value.copy(
+                    lineUseCard = walletUseCases.getWallet.getLineUseCard(stateCard.value.cardSelected!!)
                 )
             }
             .launchIn(viewModelScope)
@@ -236,13 +245,12 @@ class WalletViewModel @Inject constructor(
     data class UiStateDebt(
         val debtNotPaidList: List<DebtModel> = emptyList(),
         val debtPaidList: List<DebtModel> = emptyList(),
-        val totalDebtByType: Map<String, Type> = emptyMap(),
-        val totalDebtCard: Float = 0.0f,
+        val totalDebtByType: Map<String, Type> = emptyMap()
+    )
 
-        )
-
+    // UiEvents
     sealed class UiEvent {
-        data object Success: UiEvent()
+        data object Success : UiEvent()
     }
 
 }

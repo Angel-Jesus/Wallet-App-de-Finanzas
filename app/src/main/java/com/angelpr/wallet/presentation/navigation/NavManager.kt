@@ -23,11 +23,12 @@ import com.angelpr.wallet.presentation.screen.AddEditWalletScreen
 import com.angelpr.wallet.presentation.screen.DebtScreen
 import com.angelpr.wallet.presentation.screen.ScreenInit
 import com.angelpr.wallet.presentation.screen.StatisticsScreen
+import com.angelpr.wallet.presentation.screen.event.DebtsEvent
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 
 @SuppressLint("NewApi")
 @Composable
-fun NavManager(viewModel: WalletViewModel = hiltViewModel()) {
+fun NavManager(viewModel: WalletViewModel) {
 
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -66,6 +67,7 @@ fun NavManager(viewModel: WalletViewModel = hiltViewModel()) {
 
         composable<ItemsNavScreen.ScreenDebts>{
             DebtScreen(
+                viewModel = viewModel,
                 drawerState = drawerState,
                 navController = navController
             )
@@ -92,6 +94,7 @@ fun NavManager(viewModel: WalletViewModel = hiltViewModel()) {
             }
         ){
             AddDebtScreen(
+                viewModel = viewModel,
                 navController = navController
             )
         }
