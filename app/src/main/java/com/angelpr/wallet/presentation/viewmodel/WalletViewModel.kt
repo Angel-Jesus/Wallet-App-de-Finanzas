@@ -122,7 +122,6 @@ class WalletViewModel @Inject constructor(
                             lineUseCard = walletUseCases.getWallet.getLineUseCard(event.card)
                         )
                     }
-
                     getDebtsByCard(event.card.id)
                 }
 
