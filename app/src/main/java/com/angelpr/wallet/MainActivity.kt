@@ -1,18 +1,14 @@
 package com.angelpr.wallet
 
 import android.Manifest.permission
-import android.animation.ObjectAnimator
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.view.View
-import android.view.animation.OvershootInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -42,9 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.datastore.preferences.preferencesDataStore
 import com.angelpr.wallet.presentation.navigation.NavManager
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.WalletTheme
@@ -53,8 +47,8 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val viewModel by viewModels<WalletViewModel>()
 
+    private val viewModel by viewModels<WalletViewModel>()
     private val permissions = getPermission()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,11 +58,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         createChannel()
         setContent {
+            val showDialog = viewModel.showDialog.collectAsState().value
+            val launchSetting = viewModel.launchSetting.collectAsState().value
+
             WalletTheme {
-
-                val showDialog = viewModel.showDialog.collectAsState().value
-                val launchSetting = viewModel.launchSetting.collectAsState().value
-
                 val permissionsLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestMultiplePermissions(),
                     onResult = { result ->
@@ -99,7 +92,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 MaterialTheme {
-                    NavManager(viewModel)
+                    NavManager()
 
                     if(showDialog){
                         PermissionDialog(

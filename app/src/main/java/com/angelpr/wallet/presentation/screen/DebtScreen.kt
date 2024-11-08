@@ -1,6 +1,5 @@
 package com.angelpr.wallet.presentation.screen
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,13 +27,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -45,12 +39,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.angelpr.wallet.data.model.ActionProcess
+import com.angelpr.wallet.data.model.DebtModel
 import com.angelpr.wallet.presentation.components.MessageDialog
 import com.angelpr.wallet.presentation.components.NavigatorDrawer
 import com.angelpr.wallet.presentation.components.WarningDialog
-import com.angelpr.wallet.presentation.components.model.Type
 import com.angelpr.wallet.presentation.navigation.ItemsNavScreen
+import com.angelpr.wallet.presentation.screen.event.DebtsEvent
 import com.angelpr.wallet.presentation.screen.tabs.DebtNotPaid
 import com.angelpr.wallet.presentation.screen.tabs.DebtPaid
 import com.angelpr.wallet.presentation.tab.ItemsTabScreen
@@ -59,65 +53,29 @@ import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.GreenTopBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 @Composable
 fun DebtScreen(
-    cardId: Int,
     viewModel: WalletViewModel,
     drawerState: DrawerState,
     navController: NavController
 ) {
     val scope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { itemsTabScreens.size })
 
     val uiCardState by viewModel.stateCard.collectAsState()
     val uiDebtState by viewModel.stateDebt.collectAsState()
-    val debtTypeList by viewModel.totalDebtType.collectAsState()
 
-    var emptyStateNotPaid by remember { mutableStateOf(true) }
-    var emptyStatePaid by remember { mutableStateOf(true) }
+    var debtItem by remember { mutableStateOf<DebtModel?>(null) }
 
-    var enableButton by remember { mutableStateOf(false) }
     var cancelSchedule by remember { mutableStateOf(false) }
-
     var showWarning by remember { mutableStateOf(false) }
-    val showPaidQuotaDialog = remember { mutableStateOf(false) }
+    var showDebtDialog by remember { mutableStateOf(false) }
+    var isNotDebtPaid by remember { mutableStateOf(false) }
 
-    val indexDebt = remember { mutableIntStateOf(0) }
-    var cardName by remember { mutableStateOf("No Card") }
-    var dateExpired by remember { mutableLongStateOf(0L) }
-
-
-    val pagerState = rememberPagerState(initialPage = 0, pageCount = { itemsTabScreens.size })
-
-    LaunchedEffect(uiDebtState.state) {
-
-        Log.i("DebtScreen", "state: ${uiDebtState.state.name}")
-
-        if (uiDebtState.state == ActionProcess.SUCCESS || uiDebtState.state == ActionProcess.UPDATE_DEBT_BY_CARD) {
-            viewModel.getDebtByCard(idCard = cardId, limit = 20)
-        }
-        if (uiDebtState.debtNotPaidList.isNotEmpty()) {
-            if(uiDebtState.state == ActionProcess.DEBT_BY_CARD){
-                emptyStateNotPaid = false
-                viewModel.getDebtByType(uiDebtState.debtNotPaidList)
-            }
-        }
-        else {
-            emptyStateNotPaid = true
-        }
-
-        emptyStatePaid = !(uiDebtState.debtPaidList.isNotEmpty() && uiDebtState.state == ActionProcess.DEBT_BY_CARD)
-
-        if(emptyStateNotPaid && cancelSchedule){
-            Log.d("schedule", "cancel Schedule")
-            cancelSchedule = false
-            viewModel.cancelScheduleNotification(cardName, LocalDate.ofEpochDay(dateExpired))
-        }
-    }
-
-    if (uiCardState.cardList.isNotEmpty()) {
-        enableButton = true
+    if(uiDebtState.debtNotPaidList.none { (debtItem?.dateExpired ?: -1) == it.dateExpired } && cancelSchedule){
+        cancelSchedule = false
+        viewModel.cancelScheduleNotification(debtItem!!.nameCard, listOf(debtItem!!.dateExpired))
     }
 
     if (showWarning) {
@@ -128,25 +86,32 @@ fun DebtScreen(
         )
     }
 
-    if (showPaidQuotaDialog.value) {
+    if (showDebtDialog) {
         MessageDialog(
-            onDismissRequest = { showPaidQuotaDialog.value = false },
+            onDismissRequest = { showDebtDialog = false },
             positiveButton = {
-                // Update state of card's debt
-                viewModel.updateDebtState(
-                    id = uiDebtState.debtNotPaidList[indexDebt.intValue].id,
-                    quotas = uiDebtState.debtNotPaidList[indexDebt.intValue].quotas,
-                    quotasPaid = uiDebtState.debtNotPaidList[indexDebt.intValue].quotePaid + 1,
-                    date = uiDebtState.debtNotPaidList[indexDebt.intValue].dateExpired
-                )
-                cardName = uiDebtState.debtNotPaidList[indexDebt.intValue].nameCard
-                dateExpired = uiDebtState.debtNotPaidList[indexDebt.intValue].dateExpired
-
-                showPaidQuotaDialog.value = false
-                cancelSchedule = true
+                if (isNotDebtPaid) {
+                    viewModel.onEventDebt(
+                        DebtsEvent.UpdateDebts(
+                            debtItem!!.copy(quotePaid = debtItem!!.quotePaid + 1)
+                        )
+                    )
+                    cancelSchedule = true
+                } else {
+                    viewModel.onEventDebt(DebtsEvent.DeleteDebt(debtItem!!))
+                }
+                showDebtDialog = false
             },
-            title = "Pago de cuota",
-            text = "Si la quota es solo una se habrá pagado toda la deuda, en caso contrario, solo se registrará el pago de una quota"
+            negativeButton = {
+                if (isNotDebtPaid) {
+                    viewModel.onEventDebt(DebtsEvent.DeleteDebt(debtItem!!))
+                }
+                showDebtDialog = false
+            },
+            textNegative = if (isNotDebtPaid) "Eliminar" else "Cancelar",
+            textPositive = if (isNotDebtPaid) "Confirmar" else "Eliminar",
+            title = if (isNotDebtPaid) "Pago de cuota o eliminar deuda" else "Eliminar pago",
+            text = if (isNotDebtPaid) "Si la quota es solo una se habrá pagado toda la deuda, en caso contrario, solo se registrará el pago de una quota" else "Esta por eliminar un pago del registro"
         )
     }
 
@@ -157,6 +122,7 @@ fun DebtScreen(
         drawerState = drawerState,
         scope = scope
     ) {
+
         Scaffold(
             modifier = Modifier
                 .fillMaxSize(),
@@ -173,7 +139,7 @@ fun DebtScreen(
                 FloatingActionButton(
                     modifier = Modifier.padding(bottom = 16.dp, end = 8.dp),
                     onClick = {
-                        if (enableButton) {
+                        if (uiCardState.cardList.isNotEmpty()) {
                             navController.navigate(ItemsNavScreen.ScreenAddDebt)
                         } else {
                             showWarning = true
@@ -199,13 +165,18 @@ fun DebtScreen(
                     pagerState = pagerState
                 )
                 TabsContent(
-                    emptyStatePaid = emptyStatePaid,
-                    emptyStateNotPaid = emptyStateNotPaid,
-                    debtTypeList = debtTypeList,
+                    pagerState = pagerState,
                     uiDebtState = uiDebtState,
-                    showPaidQuoteDialog = showPaidQuotaDialog,
-                    indexDebt = indexDebt,
-                    pagerState = pagerState
+                    onDebtPaidClick = { debtPaid ->
+                        debtItem = debtPaid
+                        isNotDebtPaid = false
+                        showDebtDialog = true
+                    },
+                    onDebtNotPaidClick = { debtNotPaid ->
+                        debtItem = debtNotPaid
+                        isNotDebtPaid = true
+                        showDebtDialog = true
+                    }
                 )
             }
         }
@@ -261,13 +232,10 @@ fun Tabs(
 
 @Composable
 fun TabsContent(
-    emptyStatePaid: Boolean,
-    emptyStateNotPaid: Boolean,
-    debtTypeList: Map<String, Type>,
     uiDebtState: WalletViewModel.UiStateDebt,
-    showPaidQuoteDialog: MutableState<Boolean>,
-    indexDebt: MutableIntState,
-    pagerState: PagerState
+    pagerState: PagerState,
+    onDebtNotPaidClick: (DebtModel) -> Unit,
+    onDebtPaidClick: (DebtModel) -> Unit,
 ) {
     HorizontalPager(
         modifier = Modifier
@@ -277,17 +245,14 @@ fun TabsContent(
         when (itemsTabScreens[page]) {
             ItemsTabScreen.DebtNotPaidTab ->
                 DebtNotPaid(
-                    emptyStateNotPaid = emptyStateNotPaid,
-                    debtTypeList = debtTypeList,
                     uiDebtState = uiDebtState,
-                    showPaidQuoteDialog = showPaidQuoteDialog,
-                    indexDebt = indexDebt
+                    onClick = { onDebtNotPaidClick(it) }
                 )
 
             ItemsTabScreen.DebtPaidTab ->
                 DebtPaid(
-                    emptyStatePaid = emptyStatePaid,
                     uiDebtState = uiDebtState,
+                    oncClick = { onDebtPaidClick(it) }
                 )
         }
     }

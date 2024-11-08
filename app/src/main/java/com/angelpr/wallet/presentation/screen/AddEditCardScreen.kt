@@ -1,5 +1,7 @@
 package com.angelpr.wallet.presentation.screen
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -26,13 +28,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -44,71 +48,121 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.presentation.components.MessageDialog
+import com.angelpr.wallet.presentation.screen.event.CardsEvent
+import com.angelpr.wallet.presentation.screen.event.DebtsEvent
 import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 import com.angelpr.wallet.ui.theme.CardWalletList
 import com.angelpr.wallet.ui.theme.GreenTopBar
+import com.angelpr.wallet.utils.getDateExpired
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
+
 @Composable
-fun EditCardScreen(
+fun AddEditWalletScreen(
     viewModel: WalletViewModel,
-    cardModel: CardModel,
+    modeEdit: Boolean,
     navController: NavController
 ) {
+    val uiStateCard by viewModel.stateCard.collectAsState()
+    val uiStateDebt by viewModel.stateDebt.collectAsState()
 
-    var nameWallet by remember { mutableStateOf(cardModel.nameCard) }
-    var creditLine by remember { mutableStateOf(cardModel.creditLineCard) }
-    var typeMoney by remember { mutableStateOf(cardModel.typeMoney) }
-    var dayExpiration by remember { mutableStateOf(cardModel.paidDateExpired.toString()) }
-    var dateClose by remember { mutableStateOf(cardModel.dateClose.toString()) }
-    var colorCard by remember { mutableStateOf(cardModel.colorCard) }
+    val cardModel = if (modeEdit) uiStateCard.cardSelected else null
 
-    var showMessageDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlowAddEditCard.collectLatest { event ->
+            when (event) {
+                WalletViewModel.UiEvent.Success -> navController.popBackStack()
+            }
+        }
+    }
 
-    if(showMessageDialog){
+    var nameCard by remember { mutableStateOf(cardModel?.nameCard ?: "") }
+    var creditLine by remember { mutableStateOf(cardModel?.creditLineCard ?: "0") }
+    var typeMoney by remember { mutableStateOf(cardModel?.typeMoney ?: "PEN") }
+    var dayExpiration by remember { mutableStateOf((cardModel?.paidDateExpired ?: 0).toString()) }
+    var dateClose by remember { mutableStateOf((cardModel?.dateClose ?: 0).toString()) }
+    var colorCard by remember { mutableStateOf(cardModel?.colorCard ?: CardWalletList[0].value) }
+
+
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+
+    if (showDeleteDialog) {
         MessageDialog(
-            onDismissRequest = { showMessageDialog = false },
+            onDismissRequest = { showDeleteDialog = false },
             positiveButton = {
-                val dateToday = LocalDate.now()
-                val dateExpired = viewModel.getDateExpired(cardModel.paidDateExpired, cardModel.dateClose, dateToday)
+                if (uiStateCard.cardSelected != null) {
 
-                showMessageDialog = false
-                viewModel.deleteCard(cardModel.id)
-                viewModel.deleteAllDebt(cardModel.id)
-                viewModel.cancelScheduleNotification(cardModel.nameCard, LocalDate.ofEpochDay(dateExpired))
-                navController.popBackStack()
+                    val datesExpiredList = uiStateDebt.debtNotPaidList.map { it.dateExpired }.distinct()
+
+                    val cardDelete = CardModel(
+                        id = uiStateCard.cardSelected!!.id,
+                        nameCard = nameCard,
+                        creditLineCard = creditLine,
+                        typeMoney = typeMoney,
+                        paidDateExpired = dayExpiration.toInt(),
+                        dateClose = dateClose.toInt(),
+                        colorCard = colorCard
+                    )
+                    showDeleteDialog = false
+                    viewModel.onEventDebt(DebtsEvent.DeleteAllDebts(cardDelete.id))
+                    viewModel.onEventCard(CardsEvent.DeleteCard(cardDelete))
+                    viewModel.cancelScheduleNotification(cardDelete.nameCard, datesExpiredList)
+
+                }
             },
+            negativeButton = { showDeleteDialog = false },
             title = "Eliminar tarjeta",
             text = "Si elimina la tarjeta se eliminarán todos los registros de deuda vinculadas a ella. ¿Desea continuar?"
         )
     }
 
-
     Scaffold(
         topBar = {
             TopBar(
+                modeEdit = modeEdit,
                 onBack = { navController.popBackStack() },
-                onDeleteData = { showMessageDialog = true },
+                onDeleteData = { showDeleteDialog = true },
                 onSaveData = {
-                    viewModel.updateCard(
-                        CardModel(
-                            id = cardModel.id,
-                            nameCard = nameWallet,
-                            creditLineCard = creditLine,
-                            typeMoney = typeMoney,
-                            paidDateExpired = dayExpiration.toInt(),
-                            dateClose = dateClose.toInt(),
-                            colorCard = colorCard
+                    if (modeEdit) {
+                        viewModel.onEventCard(
+                            CardsEvent.UpdateCard(
+                                CardModel(
+                                    id = cardModel!!.id,
+                                    nameCard = nameCard,
+                                    creditLineCard = creditLine,
+                                    typeMoney = typeMoney,
+                                    paidDateExpired = dayExpiration.toInt(),
+                                    dateClose = dateClose.toInt(),
+                                    colorCard = colorCard
+                                )
+                            )
                         )
-                    )
-                    navController.popBackStack()
+                    } else {
+                        viewModel.onEventCard(
+                            CardsEvent.AddCard(
+                                CardModel(
+                                    nameCard = nameCard,
+                                    creditLineCard = creditLine,
+                                    typeMoney = typeMoney,
+                                    paidDateExpired = dayExpiration.toInt(),
+                                    dateClose = dateClose.toInt(),
+                                    colorCard = colorCard
+                                )
+                            )
+                        )
+                    }
                 }
             )
         }
     ) { innerPadding ->
+
         Column(
             modifier = Modifier.padding(innerPadding)
         ) {
@@ -124,15 +178,17 @@ fun EditCardScreen(
                 modifier = Modifier
                     .padding(start = 8.dp, end = 8.dp)
                     .fillMaxWidth(),
-                value = nameWallet,
+                value = nameCard,
                 onValueChange = { newValue ->
-                    nameWallet = newValue
+                    nameCard = newValue
                 },
                 singleLine = true,
+                /*
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
                     unfocusedIndicatorColor = Color.LightGray
                 )
+                 */
             )
 
             Text(
@@ -164,10 +220,12 @@ fun EditCardScreen(
                 },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                /*
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
                     unfocusedIndicatorColor = Color.LightGray
                 )
+                 */
             )
 
             Text(
@@ -186,10 +244,13 @@ fun EditCardScreen(
                 onValueChange = { newValue ->
                     typeMoney = newValue
                 },
+                /*
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
                     unfocusedIndicatorColor = Color.LightGray
                 )
+
+                 */
             )
 
             Text(
@@ -217,18 +278,21 @@ fun EditCardScreen(
                     },
                 value = dayExpiration,
                 onValueChange = { newValue ->
-                    if (newValue == ""){
+                    if (newValue == "") {
                         dayExpiration = newValue
-                    } else if(newValue.toInt() in 0..31){
+                    } else if (newValue.toInt() in 0..31) {
                         dayExpiration = newValue
                     }
                 },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                /*
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
                     unfocusedIndicatorColor = Color.LightGray
                 )
+
+                 */
             )
 
             Text(
@@ -256,18 +320,21 @@ fun EditCardScreen(
                     },
                 value = dateClose,
                 onValueChange = { newValue ->
-                    if(newValue == ""){
+                    if (newValue == "") {
                         dateClose = newValue
-                    } else if (newValue.toInt() in 0..31){
+                    } else if (newValue.toInt() in 0..31) {
                         dateClose = newValue
                     }
                 },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                /*
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.White,
                     unfocusedIndicatorColor = Color.LightGray
                 )
+
+                 */
             )
 
             Text(
@@ -283,7 +350,7 @@ fun EditCardScreen(
                 paddingEnd = 8.dp,
                 paddingTop = 8.dp
             ) { color ->
-                colorCard = color.value
+                colorCard = color
             }
         }
     }
@@ -296,10 +363,10 @@ private fun DropDownColors(
     paddingEnd: Dp = 0.dp,
     paddingTop: Dp = 0.dp,
     paddingBottom: Dp = 0.dp,
-    colorSelected: (Color) -> Unit
+    colorSelected: (ULong) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var cardColor by remember { mutableStateOf(Color(color)) }
+    var colorCard by remember { mutableStateOf(Color(color)) }
     var textFiledSize by remember { mutableStateOf(Size.Zero) }
 
     val icon = if (expanded) {
@@ -334,7 +401,7 @@ private fun DropDownColors(
                         .fillMaxHeight(0.08f)
                         .fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = cardColor
+                        containerColor = colorCard
                     ),
                     shape = RoundedCornerShape(6.dp)
                 ) { }
@@ -347,10 +414,13 @@ private fun DropDownColors(
                     tint = Color.Black
                 )
             },
+            /*
             colors = TextFieldDefaults.colors(
                 disabledContainerColor = Color.White,
                 disabledIndicatorColor = Color.LightGray
             )
+
+             */
         )
 
         DropdownMenu(
@@ -374,9 +444,9 @@ private fun DropDownColors(
                         ) { }
                     },
                     onClick = {
-                        cardColor = color
+                        colorCard = color
                         expanded = false
-                        colorSelected(color)
+                        colorSelected(color.value)
                     }
                 )
             }
@@ -389,6 +459,7 @@ private fun DropDownColors(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TopBar(
+    modeEdit: Boolean,
     onBack: () -> Unit,
     onDeleteData: () -> Unit,
     onSaveData: () -> Unit
@@ -406,14 +477,16 @@ private fun TopBar(
             }
         },
         actions = {
-            IconButton(
-                onClick = onDeleteData
-            ) {
-                Icon(
-                    tint = Color.White,
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = "Delete"
-                )
+            if (modeEdit) {
+                IconButton(
+                    onClick = onDeleteData
+                ) {
+                    Icon(
+                        tint = Color.White,
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = "Delete"
+                    )
+                }
             }
 
             IconButton(
@@ -435,3 +508,4 @@ private fun TopBar(
         )
     )
 }
+

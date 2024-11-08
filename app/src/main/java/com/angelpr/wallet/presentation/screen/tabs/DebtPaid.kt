@@ -1,6 +1,7 @@
 package com.angelpr.wallet.presentation.screen.tabs
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,21 +38,21 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun DebtPaid(
-    emptyStatePaid: Boolean,
-    uiDebtState: WalletViewModel.UiStateDebt
+    uiDebtState: WalletViewModel.UiStateDebt,
+    oncClick: (DebtModel) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .wrapContentSize(
-                align = if (emptyStatePaid) {
+                align = if (uiDebtState.debtPaidList.isEmpty()) {
                     Alignment.Center
                 } else {
                     Alignment.TopStart
                 }
             )
     ) {
-        if (emptyStatePaid) {
+        if (uiDebtState.debtPaidList.isEmpty()) {
             item {
                 EmptyStateScreen(
                     title = "Nada registrado",
@@ -70,7 +71,8 @@ fun DebtPaid(
             }
             items(uiDebtState.debtPaidList){ debtModel ->
                 CardDebtPaidtItem(
-                    debtModel = debtModel
+                    debtModel = debtModel,
+                    onClick = { oncClick(debtModel) }
                 )
             }
         }
@@ -80,7 +82,8 @@ fun DebtPaid(
 @SuppressLint("NewApi")
 @Composable
 private fun CardDebtPaidtItem(
-    debtModel: DebtModel
+    debtModel: DebtModel,
+    onClick: () -> Unit
 ) {
     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
     val date = LocalDate.ofEpochDay(debtModel.date)
@@ -88,6 +91,7 @@ private fun CardDebtPaidtItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick() }
     ) {
         Column(
             modifier = Modifier
@@ -176,31 +180,5 @@ private fun CardDebtPaidtItem(
             )
         }
 
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DebtPaidPreview() {
-    MaterialTheme{
-        DebtPaid(
-            emptyStatePaid = false,
-            uiDebtState = WalletViewModel.UiStateDebt(
-                debtPaidList = listOf(
-                    DebtModel(
-                        idWallet = 0,
-                        nameCard = "Bbva Befree",
-                        typeMoney = "PEN",
-                        debt = 100.0f,
-                        type = "Compras",
-                        date = LocalDate.now().toEpochDay(),
-                        dateExpired = LocalDate.now().toEpochDay(),
-                        quotas = 1,
-                        quotePaid = 1,
-                        isPaid = 1
-                    )
-                )
-            )
-        )
     }
 }

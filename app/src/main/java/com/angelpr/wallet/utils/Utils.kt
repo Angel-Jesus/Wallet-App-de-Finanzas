@@ -10,11 +10,6 @@ fun <T> Iterable<T>.sumOfFloat(selector: (T) -> Float):Float {
     return sum
 }
 
-fun getMonthInCase(date: Long, isNextMonth: Boolean): Long {
-    return if (isNextMonth) LocalDate.ofEpochDay(date).plusMonths(1)
-        .toEpochDay() else date
-}
-
 object Constants{
     const val MY_CHANNEL_ID = "myChannel"
     const val NOTIFICATION_KEY = "notificacion"
@@ -24,4 +19,25 @@ object Constants{
     const val STATISTICS = "Estadistica"
     const val SETTINGS = "Configuracion"
 
+}
+
+fun getMonthInCase(date: Long, isNextMonth: Boolean): Long {
+    return if (isNextMonth) LocalDate.ofEpochDay(date).plusMonths(1)
+        .toEpochDay() else date
+}
+
+fun getDateExpired(dayExpired: Int, dateClose: Int): Long {
+    val dateToday = LocalDate.now()
+    val dateMonthToday = LocalDate.of(dateToday.year, dateToday.month.value, dayExpired)
+
+    return if (dateToday.dayOfMonth > dateClose) {
+        dateMonthToday.plusMonths(2).toEpochDay()
+    } else {
+        dateMonthToday.plusMonths(1).toEpochDay()
+    }
+}
+
+fun getInitDate(date: Int): LocalDate {
+    val today = LocalDate.now()
+    return if(today.dayOfMonth < date) LocalDate.of(today.year, today.month.plus(-1), date) else LocalDate.of(today.year, today.month, date)
 }

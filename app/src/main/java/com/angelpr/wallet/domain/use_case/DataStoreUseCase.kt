@@ -1,10 +1,9 @@
-package com.angelpr.wallet.domain
+package com.angelpr.wallet.domain.use_case
 
-import com.angelpr.wallet.data.DataStoreRepository
-import javax.inject.Inject
+import com.angelpr.wallet.domain.repository.DataStoreRepository
 
 
-class DataStoreUseCase @Inject constructor(
+class DataStoreUseCase(
     private val repository: DataStoreRepository
 ){
     suspend fun updateNotification(enabled: Boolean) = repository.updateNotification(enabled)

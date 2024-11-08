@@ -4,13 +4,24 @@ import kotlinx.serialization.Serializable
 
 sealed class ItemsNavScreen {
     @Serializable
-    data object ScreenInit: ItemsNavScreen()
+    data object ScreenInit : ItemsNavScreen()
+
     @Serializable
-    data object ScreenStatistics: ItemsNavScreen()
+    data object ScreenStatistics : ItemsNavScreen()
+
     @Serializable
-    data object ScreenAddWallet: ItemsNavScreen()
+    data class ScreenAddEditWallet(val modeEdit: Boolean) :
+        ItemsNavScreen()
+
     @Serializable
-    data object ScreenDebts: ItemsNavScreen()
+    data object ScreenDebts : ItemsNavScreen()
+
+    @Serializable
+    data object ScreenAddDebt : ItemsNavScreen()
+    /*
+        @Serializable
+        data object ScreenSettings: ItemsNavScreen()
+
     @Serializable
     data class ScreenEditCard(
         val id: Int,
@@ -21,11 +32,5 @@ sealed class ItemsNavScreen {
         val dateClose: String,
         val colorCard: Long
     ): ItemsNavScreen()
-    @Serializable
-    data object ScreenAddDebt: ItemsNavScreen()
-/*
-    @Serializable
-    data object ScreenSettings: ItemsNavScreen()
- */
-
+    */
 }

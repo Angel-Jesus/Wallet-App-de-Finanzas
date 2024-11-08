@@ -32,6 +32,9 @@ import com.angelpr.wallet.R
 fun MessageDialog(
     onDismissRequest: () -> Unit,
     positiveButton: () -> Unit,
+    negativeButton: () -> Unit,
+    textPositive: String = "Confirmar",
+    textNegative: String = "Cancelar",
     title: String,
     text: String
 ) {
@@ -80,16 +83,16 @@ fun MessageDialog(
                         .align(alignment = Alignment.End)
                 ){
                     TextButton(
-                        onClick = onDismissRequest,
+                        onClick = negativeButton,
 
                     ) {
-                        Text("Cancelar")
+                        Text(textNegative)
                     }
 
                     TextButton(
                         onClick = positiveButton,
                     ) {
-                        Text("Confirmar")
+                        Text(textPositive)
                     }
                 }
 
@@ -97,16 +100,4 @@ fun MessageDialog(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MessageDialogPreview() {
-    MessageDialog(
-        onDismissRequest = {},
-        positiveButton = {},
-        title = "Eliminar tarjeta",
-        text = "Si elimina la tarjeta se eliminarán todos los registros de deuda vinculadas a ella. ¿Desea continuar?"
-    )
-
 }
