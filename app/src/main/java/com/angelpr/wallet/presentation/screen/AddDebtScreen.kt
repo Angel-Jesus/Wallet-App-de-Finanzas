@@ -99,7 +99,7 @@ fun AddDebtScreen(
 
                     // Add schedule Notification
                     // Add conditional to enable or disable option to schedule notification
-                    // It's depende on the state of the switch button
+                    // It's depended on the state of the switch button
                     // In case there are notification with the same id, the notification will be updated
                     if (enableNotifications) {
                         viewModel.setScheduleNotification(
@@ -518,14 +518,3 @@ private fun TopBar(
         )
     )
 }
-
-/*
-@Preview(showBackground = true)
-@Composable
-fun AddDebtScreenPreview() {
-    MaterialTheme{
-        AddDebtScreen(navController = NavController(LocalContext.current))
-
-    }
-}
- */

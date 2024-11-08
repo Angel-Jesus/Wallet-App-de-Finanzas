@@ -28,7 +28,7 @@ import com.angelpr.wallet.presentation.viewmodel.WalletViewModel
 
 @SuppressLint("NewApi")
 @Composable
-fun NavManager(viewModel: WalletViewModel) {
+fun NavManager(viewModel: WalletViewModel = hiltViewModel()) {
 
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -51,6 +51,7 @@ fun NavManager(viewModel: WalletViewModel) {
 
         composable<ItemsNavScreen.ScreenStatistics> {
             StatisticsScreen(
+                viewModel = viewModel,
                 drawerState = drawerState,
                 navController = navController
             )

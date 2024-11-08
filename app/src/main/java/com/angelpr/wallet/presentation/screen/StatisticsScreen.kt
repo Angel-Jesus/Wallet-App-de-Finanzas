@@ -29,7 +29,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun StatisticsScreen(
-    viewModel: WalletViewModel = hiltViewModel(),
+    viewModel: WalletViewModel,
     drawerState: DrawerState,
     navController: NavController) {
 

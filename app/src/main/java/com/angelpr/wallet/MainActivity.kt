@@ -92,7 +92,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 MaterialTheme {
-                    NavManager(viewModel)
+                    NavManager()
 
                     if(showDialog){
                         PermissionDialog(
