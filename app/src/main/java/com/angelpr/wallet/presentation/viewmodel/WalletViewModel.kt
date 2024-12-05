@@ -1,14 +1,13 @@
 package com.angelpr.wallet.presentation.viewmodel
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.data.model.DebtModel
-import com.angelpr.wallet.domain.use_case.DataStoreUseCase
-import com.angelpr.wallet.domain.use_case.NotificationUseCase
-import com.angelpr.wallet.domain.use_case.wallet.WalletUseCases
+import com.angelpr.wallet.domain.DataStoreUseCase
+import com.angelpr.wallet.domain.NotificationUseCase
+import com.angelpr.wallet.domain.WalletUseCases
 import com.angelpr.wallet.presentation.components.model.Type
 import com.angelpr.wallet.presentation.screen.event.CardsEvent
 import com.angelpr.wallet.presentation.screen.event.DebtsEvent
@@ -32,7 +31,7 @@ class WalletViewModel @Inject constructor(
     private val dataStoreUseCase: DataStoreUseCase
 ) : ViewModel() {
 
-    private val stateInit = mutableStateOf(true)
+    private val _stateInit = mutableStateOf(true)
 
     private val _enableNotification = MutableStateFlow(false)
     val enableNotification = _enableNotification.asStateFlow()
@@ -78,11 +77,41 @@ class WalletViewModel @Inject constructor(
         }
     }
 
+    // State of Notification buttom saved in dataStore
     fun getEnableNotification() {
         viewModelScope.launch {
             dataStoreUseCase.getNotification().collect { enable ->
                 _enableNotification.update { enable }
             }
+        }
+    }
+
+    // Notification and AlarmManager
+    fun setScheduleNotification(cardName: String, daysToSubtract: Long, dateExpired: LocalDate) {
+        val notificationId =
+            dateExpired.year * 10000 + dateExpired.monthValue * 100 + dateExpired.dayOfMonth + cardName.hashCode()
+
+        val dateRecordatory = dateExpired.minusDays(daysToSubtract)
+        val year = dateRecordatory.year
+        val month = dateRecordatory.month.value
+        val day = dateRecordatory.dayOfMonth
+
+        notificationUseCase.schedule(
+            cardName = cardName,
+            dateExpired = dateExpired,
+            notificationId = notificationId,
+            year = year,
+            month = month,
+            day = day
+        )
+    }
+
+    fun cancelScheduleNotification(cardName: String, dates: List<Long>) {
+        for (date in dates) {
+            val dateExpired = LocalDate.ofEpochDay(date)
+            val notificationId =
+                dateExpired.year * 10000 + dateExpired.monthValue * 100 + dateExpired.dayOfMonth + cardName.hashCode()
+            notificationUseCase.cancel(notificationId)
         }
     }
 
@@ -163,53 +192,30 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    // Notification and AlarmManager
-    fun setScheduleNotification(cardName: String, daysToSubtract: Long, dateExpired: LocalDate) {
-        val notificationId =
-            dateExpired.year * 10000 + dateExpired.monthValue * 100 + dateExpired.dayOfMonth + cardName.hashCode()
-
-        val dateRecordatory = dateExpired.minusDays(daysToSubtract)
-        val year = dateRecordatory.year
-        val month = dateRecordatory.month.value
-        val day = dateRecordatory.dayOfMonth
-
-        notificationUseCase.schedule(
-            cardName = cardName,
-            dateExpired = dateExpired,
-            notificationId = notificationId,
-            year = year,
-            month = month,
-            day = day
-        )
-    }
-
-    fun cancelScheduleNotification(cardName: String, dates: List<Long>) {
-        for (date in dates) {
-            val dateExpired = LocalDate.ofEpochDay(date)
-            val notificationId =
-                dateExpired.year * 10000 + dateExpired.monthValue * 100 + dateExpired.dayOfMonth + cardName.hashCode()
-            notificationUseCase.cancel(notificationId)
-        }
-    }
-
     // Jobs
     private fun getCards() {
         getCardsJob?.cancel()
         getCardsJob = walletUseCases.getWallet.allCard()
             .onEach { cards ->
-                val isNullCardSelected = stateCard.value.cardSelected == null
+                println("Cards: $cards")
+                val isNullCardSelected = if(cards.isNotEmpty()) stateCard.value.cardSelected == null else true
                 val cardInit = cards.firstOrNull()
+                println("CardInit: $cardInit")
                 _stateCard.value = stateCard.value.copy(
                     cardList = cards,
                     cardSelected = if (isNullCardSelected) cardInit else stateCard.value.cardSelected
                 )
 
                 // Only execute first time
-                if (stateInit.value) {
-                    stateInit.value = false
+                if (_stateInit.value) {
+                    _stateInit.value = false
                     getDebtsByCard(_stateCard.value.cardSelected?.id ?: 0)
                 }
 
+                if(_stateCard.value.cardSelected != null){
+                    getDebtsByCard(id = _stateCard.value.cardSelected!!.id)
+                }
+                println("GetCard: ${_stateCard.value.cardSelected}")
             }
             .launchIn(viewModelScope)
     }
@@ -227,9 +233,14 @@ class WalletViewModel @Inject constructor(
                     totalDebtByType = walletUseCases.getWallet.getTotalDebtType(debtsNotPaid)
                 )
 
-                _stateCard.value = stateCard.value.copy(
-                    lineUseCard = walletUseCases.getWallet.getLineUseCard(stateCard.value.cardSelected!!)
-                )
+                println("CardSelected: ${stateCard.value.cardSelected}")
+
+                if(_stateCard.value.cardSelected != null){
+                    _stateCard.value = stateCard.value.copy(
+                        lineUseCard = walletUseCases.getWallet.getLineUseCard(stateCard.value.cardSelected!!)
+                    )
+                }
+                println("_CardSelected: ${_stateCard.value.cardSelected}")
             }
             .launchIn(viewModelScope)
     }

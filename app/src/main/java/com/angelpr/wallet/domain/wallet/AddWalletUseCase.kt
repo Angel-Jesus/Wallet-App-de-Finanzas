@@ -1,8 +1,8 @@
-package com.angelpr.wallet.domain.use_case.wallet
+package com.angelpr.wallet.domain.wallet
 
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.data.model.DebtModel
-import com.angelpr.wallet.domain.repository.WalletRepository
+import com.angelpr.wallet.data.repository.WalletRepository
 
 class AddWalletUseCase(
     private val repository: WalletRepository

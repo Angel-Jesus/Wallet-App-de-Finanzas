@@ -1,10 +1,10 @@
-package com.angelpr.wallet.domain.use_case.wallet
+package com.angelpr.wallet.domain.wallet
 
 import com.angelpr.wallet.data.db.entities.toCardWallet
 import com.angelpr.wallet.data.db.entities.toDebtsWallet
 import com.angelpr.wallet.data.model.CardModel
 import com.angelpr.wallet.data.model.DebtModel
-import com.angelpr.wallet.domain.repository.WalletRepository
+import com.angelpr.wallet.data.repository.WalletRepository
 import com.angelpr.wallet.presentation.components.model.Type
 import com.angelpr.wallet.utils.getInitDate
 import kotlinx.coroutines.flow.Flow
@@ -27,7 +27,6 @@ class GetWalletUseCase(
         repository.getTotalDebtType(debtList)
 
     suspend fun getLineUseCard(card: CardModel): Float {
-
         val init = getInitDate(card.dateClose)
         val end = init.plusMonths(1)
 

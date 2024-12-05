@@ -5,12 +5,10 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.angelpr.wallet.data.repository.DataStoreRepositoryImpl
-import com.angelpr.wallet.data.repository.NotificationRepositoryImpl
-import com.angelpr.wallet.domain.repository.DataStoreRepository
-import com.angelpr.wallet.domain.repository.NotificacionRepository
-import com.angelpr.wallet.domain.use_case.DataStoreUseCase
-import com.angelpr.wallet.domain.use_case.NotificationUseCase
+import com.angelpr.wallet.data.repository.DataStoreRepository
+import com.angelpr.wallet.data.repository.NotificationRepository
+import com.angelpr.wallet.domain.DataStoreUseCase
+import com.angelpr.wallet.domain.NotificationUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,8 +32,8 @@ object ScheduleNotificationModule {
     fun provideNotificationRepository(
         @ApplicationContext context: Context,
         alarmManager: AlarmManager
-    ): NotificacionRepository =
-        NotificationRepositoryImpl(alarmManager = alarmManager, context = context)
+    ): NotificationRepository =
+        NotificationRepository(alarmManager = alarmManager, context = context)
 
     @Singleton
     @Provides
@@ -45,11 +43,11 @@ object ScheduleNotificationModule {
     @Singleton
     @Provides
     fun provideDataStoreRepository(dataStore: DataStore<Preferences>): DataStoreRepository =
-        DataStoreRepositoryImpl(dataStore)
+        DataStoreRepository(dataStore)
 
     @Singleton
     @Provides
-    fun provideNotificationUseCase(repository: NotificacionRepository): NotificationUseCase =
+    fun provideNotificationUseCase(repository: NotificationRepository): NotificationUseCase =
         NotificationUseCase(repository)
 
     @Singleton

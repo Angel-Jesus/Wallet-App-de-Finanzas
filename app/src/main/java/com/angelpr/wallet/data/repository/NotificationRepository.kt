@@ -5,16 +5,15 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.angelpr.wallet.data.receiver.AlarmReceiver
-import com.angelpr.wallet.domain.repository.NotificacionRepository
 import java.time.LocalDate
 import java.util.Calendar
 
-class NotificationRepositoryImpl(
+class NotificationRepository(
     private val alarmManager: AlarmManager,
     private val context: Context
-): NotificacionRepository {
+) {
 
-    override fun schedule(
+    fun schedule(
         cardName: String,
         dateExpired: LocalDate,
         notificationId: Int,
@@ -52,7 +51,7 @@ class NotificationRepositoryImpl(
         )
     }
 
-    override fun cancel(notificationId: Int) {
+    fun cancel(notificationId: Int) {
         alarmManager.cancel(
             PendingIntent.getBroadcast(
                 context,

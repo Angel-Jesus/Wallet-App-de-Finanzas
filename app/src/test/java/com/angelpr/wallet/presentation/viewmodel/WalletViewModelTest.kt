@@ -1,11 +1,12 @@
 package com.angelpr.wallet.presentation.viewmodel
 
-import com.angelpr.wallet.domain.use_case.DataStoreUseCase
-import com.angelpr.wallet.domain.use_case.wallet.DeleteWalletUseCase
-import com.angelpr.wallet.domain.use_case.wallet.GetWalletUseCase
-import com.angelpr.wallet.domain.use_case.NotificationUseCase
-import com.angelpr.wallet.domain.use_case.wallet.AddWalletUseCase
-import com.angelpr.wallet.domain.use_case.wallet.UpdateWalletUseCase
+import com.angelpr.wallet.domain.DataStoreUseCase
+import com.angelpr.wallet.domain.wallet.DeleteWalletUseCase
+import com.angelpr.wallet.domain.wallet.GetWalletUseCase
+import com.angelpr.wallet.domain.NotificationUseCase
+import com.angelpr.wallet.domain.WalletUseCases
+import com.angelpr.wallet.domain.wallet.AddWalletUseCase
+import com.angelpr.wallet.domain.wallet.UpdateWalletUseCase
 import io.mockk.MockKAnnotations
 import io.mockk.impl.annotations.RelaxedMockK
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +19,7 @@ import org.junit.Before
 @OptIn(ExperimentalCoroutinesApi::class)
 class WalletViewModelTest{
 
+    /*
     @RelaxedMockK
     private lateinit var getWalletUseCase: GetWalletUseCase
     @RelaxedMockK
@@ -26,6 +28,10 @@ class WalletViewModelTest{
     private lateinit var updateWalletUseCase: UpdateWalletUseCase
     @RelaxedMockK
     private lateinit var deleteWalletUseCase: DeleteWalletUseCase
+     */
+
+    @RelaxedMockK
+    private lateinit var walletUseCases: WalletUseCases
     @RelaxedMockK
     private lateinit var notificationUseCase: NotificationUseCase
     @RelaxedMockK
@@ -38,12 +44,9 @@ class WalletViewModelTest{
     fun onBefore(){
         MockKAnnotations.init(this)
         viewModel = WalletViewModel(
-            getWalletUseCase,
-            addWalletUseCase,
-            updateWalletUseCase,
-            deleteWalletUseCase,
-            notificationUseCase,
-            dataStoreUseCase
+            walletUseCases = walletUseCases,
+            notificationUseCase = notificationUseCase,
+            dataStoreUseCase = dataStoreUseCase
         )
 
         Dispatchers.setMain(Dispatchers.Unconfined)

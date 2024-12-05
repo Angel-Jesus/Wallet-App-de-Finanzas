@@ -1,6 +1,6 @@
-package com.angelpr.wallet.domain.use_case
+package com.angelpr.wallet.domain
 
-import com.angelpr.wallet.domain.repository.DataStoreRepository
+import com.angelpr.wallet.data.repository.DataStoreRepository
 
 
 class DataStoreUseCase(
